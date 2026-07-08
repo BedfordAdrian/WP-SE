@@ -1,0 +1,30 @@
+{
+  "name": "authorlift",
+  "version": "1.0.0",
+  "description": "AuthorLift — a social media marketing platform that builds an author's readership and drives a measurable bump in book sales.",
+  "type": "module",
+  "bin": {
+    "authorlift": "bin/authorlift.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "seed": "node bin/authorlift.js seed --force",
+    "test": "node --test",
+    "cli": "node bin/authorlift.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "keywords": [
+    "author",
+    "marketing",
+    "social-media",
+    "book-launch",
+    "scheduler",
+    "analytics"
+  ],
+  "license": "MIT"
+}
