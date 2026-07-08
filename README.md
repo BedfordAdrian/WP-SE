@@ -75,8 +75,38 @@ node bin/authorlift.js seed --force             # reset to demo data
 ### Tests
 
 ```bash
-npm test        # 50 tests, Node's built-in runner, no extra deps
+npm test        # 53 tests, Node's built-in runner, no extra deps
 ```
+
+---
+
+## Install as a WordPress plugin
+
+The same product ships as a self-contained WordPress plugin (in
+`wordpress-plugin/authorlift/`) — ideal if your author site already runs
+WordPress.
+
+```bash
+bash wordpress-plugin/build.sh      # produces wordpress-plugin/authorlift.zip
+```
+
+Then in **wp-admin → Plugins → Add New → Upload Plugin**, upload
+`authorlift.zip`, activate, and open **AuthorLift** in the admin menu. It stores
+data in a single WordPress option, publishes due posts via WP-Cron, and exposes
+the same dashboard under the admin. No database migrations, no external
+services, no API keys. Real network publishers register via the
+`authorlift_publishers` filter.
+
+---
+
+## Built for your whole catalogue
+
+AuthorLift is multi-book by design — *Lisa Doyle is Absolutely Fine* is only the
+seeded example. Add every title you publish under **Books** (or paste JSON via
+**Books → Import JSON** to absorb one in a step), and AuthorLift generates
+content and full launch/sale/evergreen campaigns for each. The richer a book's
+data — tropes, **comps** ("for readers who loved…"), pull-quotes and **reviews**
+— the sharper the copy it produces.
 
 ---
 

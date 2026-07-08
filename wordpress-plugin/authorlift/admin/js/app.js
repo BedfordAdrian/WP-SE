@@ -1,16 +1,23 @@
 // AuthorLift dashboard — dependency-free SPA.
-// Talks to the REST API in src/server.js. All dynamic text is escaped before
-// being inserted into the DOM.
+// In the WordPress plugin this talks to the /wp-json/authorlift/v1 REST API,
+// authenticated with the logged-in admin cookie + a REST nonce. All dynamic
+// text is escaped before being inserted into the DOM.
 
 // ---------------------------------------------------------------- API client
+const AL_CONFIG = (typeof AuthorLiftConfig !== 'undefined')
+  ? AuthorLiftConfig
+  : { root: '/api', nonce: '' }; // fallback for the standalone Node server
+const AL_ROOT = String(AL_CONFIG.root || '/api').replace(/\/$/, '');
+
 const api = {
   async req(method, path, body) {
-    const opts = { method, headers: {} };
+    const opts = { method, headers: {}, credentials: 'same-origin' };
+    if (AL_CONFIG.nonce) opts.headers['X-WP-Nonce'] = AL_CONFIG.nonce;
     if (body !== undefined) {
       opts.headers['Content-Type'] = 'application/json';
       opts.body = JSON.stringify(body);
     }
-    const res = await fetch(`/api${path}`, opts);
+    const res = await fetch(AL_ROOT + path, opts);
     if (res.status === 204) return null;
     const text = await res.text();
     const data = text ? JSON.parse(text) : null;
