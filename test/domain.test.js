@@ -4,6 +4,7 @@ import { createStore } from '../src/db/store.js';
 import { createBook, deleteBook } from '../src/domain/books.js';
 import { createCampaign } from '../src/domain/campaigns.js';
 import { createPost, updatePost, schedulePost } from '../src/domain/posts.js';
+import { cleanHandle, saveAuthor } from '../src/domain/author.js';
 import { ValidationError } from '../src/utils/validate.js';
 
 function freshStore() {
@@ -57,6 +58,26 @@ test('schedulePost sets status and time', () => {
   const s = schedulePost(store, p.id, when);
   assert.equal(s.status, 'scheduled');
   assert.equal(s.scheduledAt, when);
+});
+
+test('cleanHandle reduces @handles and profile URLs to the bare handle', () => {
+  assert.equal(cleanHandle('mofanningbooks'), 'mofanningbooks');
+  assert.equal(cleanHandle('@mofanningbooks'), 'mofanningbooks');
+  assert.equal(cleanHandle('https://www.facebook.com/mofanningbooks'), 'mofanningbooks');
+  assert.equal(cleanHandle('https://instagram.com/mofanningbooks/'), 'mofanningbooks');
+  assert.equal(cleanHandle('https://www.tiktok.com/@mofanningbooks'), 'mofanningbooks');
+  assert.equal(cleanHandle('https://bsky.app/profile/mofanning.bsky.social'), 'mofanning.bsky.social');
+  assert.equal(cleanHandle('mofanning.bsky.social'), 'mofanning.bsky.social');
+});
+
+test('saveAuthor stores cleaned handles even from full URLs', () => {
+  const store = freshStore();
+  const a = saveAuthor(store, {
+    penName: 'Mo',
+    handles: { facebook: 'https://www.facebook.com/mofanningbooks', bluesky: '@mo.bsky.social' },
+  });
+  assert.equal(a.handles.facebook, 'mofanningbooks');
+  assert.equal(a.handles.bluesky, 'mo.bsky.social');
 });
 
 test('hashtags get normalised with leading #', () => {

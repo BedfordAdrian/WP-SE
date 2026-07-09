@@ -42,6 +42,20 @@ class AuthorLift_Author {
         );
     }
 
+    // Accept a bare handle, an "@handle", or a full profile URL and reduce it to
+    // just the handle (e.g. https://www.facebook.com/mofanningbooks -> mofanningbooks).
+    public static function clean_handle($raw) {
+        $v = trim((string) $raw);
+        if (strpos($v, '/') !== false) {
+            $v = rtrim($v, '/');
+            $pos = strrpos($v, '/');
+            if ($pos !== false) {
+                $v = substr($v, $pos + 1);
+            }
+        }
+        return trim(ltrim($v, '@'));
+    }
+
     private static function normalize_handles($handles) {
         $out = array();
         foreach (AuthorLift_Enums::PLATFORMS as $platform) {
@@ -49,7 +63,10 @@ class AuthorLift_Author {
                 continue;
             }
             if (isset($handles[$platform]) && is_string($handles[$platform]) && trim($handles[$platform]) !== '') {
-                $out[$platform] = ltrim(trim($handles[$platform]), '@');
+                $cleaned = self::clean_handle($handles[$platform]);
+                if ($cleaned !== '') {
+                    $out[$platform] = $cleaned;
+                }
             }
         }
         return $out;

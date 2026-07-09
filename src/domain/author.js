@@ -29,13 +29,26 @@ export function normalizeAuthor(input = {}, existing = {}) {
   return author;
 }
 
+// Accept a bare handle ("mofanningbooks"), an "@handle", or a full profile URL
+// ("https://www.facebook.com/mofanningbooks", "https://bsky.app/profile/x.bsky.social",
+// "https://www.tiktok.com/@handle") and reduce it to the handle.
+export function cleanHandle(raw) {
+  let v = String(raw || '').trim();
+  if (v.includes('/')) {
+    v = v.replace(/\/+$/, ''); // drop trailing slashes
+    v = v.slice(v.lastIndexOf('/') + 1);
+  }
+  return v.replace(/^@/, '').trim();
+}
+
 function normalizeHandles(handles) {
   const out = {};
   for (const platform of PLATFORMS) {
     if (platform === 'newsletter') continue;
     const raw = handles[platform];
     if (typeof raw === 'string' && raw.trim()) {
-      out[platform] = raw.trim().replace(/^@/, '');
+      const cleaned = cleanHandle(raw);
+      if (cleaned) out[platform] = cleaned;
     }
   }
   return out;

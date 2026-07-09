@@ -30,7 +30,7 @@ const api = {
 // Version baked into this JS file. Compared against the server version (which is
 // delivered inline and therefore never cached) to detect a stale cached
 // dashboard — the usual cause of "the new option isn't showing up".
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.2.1';
 const AL_SERVER_VERSION = (typeof AuthorLiftConfig !== 'undefined' && AuthorLiftConfig.serverVersion) || null;
 
 // ---------------------------------------------------------------- utilities
@@ -834,7 +834,7 @@ views.settings = async () => {
           <div class="field"><label>Timezone</label><select id="a-tz">${m.timezones.map((t) => `<option ${a.timezone === t ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></div>
         </div>
         <div class="section-title">Handles</div>
-        <div class="help" style="margin-bottom:10px">Set a handle for each network you post on — the campaign planner schedules to exactly the channels you fill in here (leave the rest blank).</div>
+        <div class="help" style="margin-bottom:10px">Enter just the handle (e.g. <span class="mono">mofanningbooks</span>) — an @ or a full profile URL works too. For Bluesky use your full handle, e.g. <span class="mono">mofanning.bsky.social</span>. The planner schedules to exactly the channels you fill in (leave the rest blank).</div>
         ${handleRows.join('')}
         <button class="btn primary" id="a-save">Save profile</button>
       </div>
