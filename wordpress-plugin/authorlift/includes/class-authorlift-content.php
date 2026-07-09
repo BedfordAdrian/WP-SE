@@ -151,11 +151,25 @@ class AuthorLift_Content {
         return $sentence;
     }
 
-    private static function price_string($book) {
-        if (!isset($book['price']) || !is_numeric($book['price'])) {
+    private static function book_price($book) {
+        if (isset($book['price']) && is_numeric($book['price'])) {
+            return (float) $book['price'];
+        }
+        $p = isset($book['prices']) ? $book['prices'] : array();
+        foreach (array('ebook', 'paperback', 'hardcover', 'audiobook') as $fmt) {
+            if (isset($p[$fmt]) && is_numeric($p[$fmt])) {
+                return (float) $p[$fmt];
+            }
+        }
+        return null;
+    }
+
+    private static function price_string($book, $currency = '$') {
+        $val = self::book_price($book);
+        if ($val === null) {
             return '';
         }
-        return ($book['price'] == 0) ? 'FREE' : number_format((float) $book['price'], 2);
+        return ($val == 0) ? 'FREE' : $currency . number_format($val, 2);
     }
 
     const LINK_ORDER = array('universal', 'booklinker', 'amazon', 'linktree', 'apple', 'kobo', 'barnesnoble', 'audible', 'signed');
@@ -197,7 +211,7 @@ class AuthorLift_Content {
         return $website ? "Join my newsletter for the release date: $website" : 'Follow for the release date!';
     }
 
-    private static function build_context($author, $book, $referenceMs, $rng) {
+    private static function build_context($author, $book, $referenceMs, $rng, $currency = '$') {
         $title = !empty($book['title']) ? $book['title'] : 'my new book';
         $trope = $rng->pick(isset($book['tropes']) ? $book['tropes'] : array());
         $quote = $rng->pick(isset($book['quotes']) ? $book['quotes'] : array());
@@ -224,7 +238,7 @@ class AuthorLift_Content {
             'reviewText' => $review ? self::first_sentence($review['text'], 160) : '',
             'reviewStars' => $review ? str_repeat('⭐', isset($review['rating']) ? $review['rating'] : 5) : '⭐⭐⭐⭐⭐',
             'daysToRelease' => $daysToRelease,
-            'price' => self::price_string($book),
+            'price' => self::price_string($book, $currency),
             'cta' => self::cta_for($book, $author),
             'link' => self::primary_link($book),
             'website' => isset($author['website']) ? $author['website'] : '',
@@ -363,7 +377,9 @@ class AuthorLift_Content {
         $rng = new AuthorLift_Rng($seedValue);
 
         $referenceMs = $referenceDate ? authorlift_ms($referenceDate) : null;
-        $ctx = self::build_context(is_array($author) ? $author : array(), $effectiveBook, $referenceMs, $rng);
+        $settings = $store->get_settings();
+        $currency = (is_array($settings) && isset($settings['currencySymbol'])) ? $settings['currencySymbol'] : '$';
+        $ctx = self::build_context(is_array($author) ? $author : array(), $effectiveBook, $referenceMs, $rng, $currency);
 
         $templates = self::templates();
         $variants = isset($templates[$postType]) ? $templates[$postType] : $templates['teaser'];

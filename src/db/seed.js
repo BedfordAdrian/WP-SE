@@ -57,6 +57,7 @@ export async function seed(store, { now = new Date() } = {}) {
       universal: 'https://books2read.com/absolutely',
       signed: 'https://shop.mofanning.co.uk/products/lisa-doyle-is-absolutely-fine-1',
     },
+    prices: { ebook: 3.99, audiobook: 12.99, paperback: 9.99, hardcover: 16.99 },
     releaseDate,
     status: 'released',
   });

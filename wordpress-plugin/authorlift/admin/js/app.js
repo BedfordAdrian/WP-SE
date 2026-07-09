@@ -37,7 +37,7 @@ const api = {
 // Version baked into this JS file. Compared against the server version (which is
 // delivered inline and therefore never cached) to detect a stale cached
 // dashboard — the usual cause of "the new option isn't showing up".
-const APP_VERSION = '1.2.1';
+const APP_VERSION = '1.2.2';
 const AL_SERVER_VERSION = (typeof AuthorLiftConfig !== 'undefined' && AuthorLiftConfig.serverVersion) || null;
 
 // ---------------------------------------------------------------- utilities
@@ -80,6 +80,20 @@ function titleCase(s) {
 const PLATFORM_ICON = { twitter: 'Twitter/X', bluesky: 'Bluesky', instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok', threads: 'Threads', newsletter: 'Newsletter' };
 const PLATFORM_COLOR = { twitter: '#1d9bf0', bluesky: '#0085ff', instagram: '#e1306c', facebook: '#1877f2', tiktok: '#25f4ee', threads: '#b478f6', newsletter: '#f59e0b' };
 const LINK_LABELS = { universal: 'Books2Read universal', booklinker: 'Booklinker (all Amazon)', linktree: 'Linktree', signed: 'Signed copies (webshop)', amazon: 'Amazon', apple: 'Apple Books', kobo: 'Kobo', barnesnoble: 'Barnes & Noble', audible: 'Audible' };
+const CURRENCIES = [{ symbol: '£', label: '£ British Pound' }, { symbol: '$', label: '$ US Dollar' }, { symbol: '€', label: '€ Euro' }];
+function currencySymbol() { return (state.settings && state.settings.currencySymbol) || '$'; }
+const PRICE_FORMATS = [['ebook', 'eBook'], ['audiobook', 'Audiobook'], ['paperback', 'Paperback'], ['hardcover', 'Hardcover']];
+function priceSummary(b) {
+  const p = b.prices || {};
+  const cur = currencySymbol();
+  const short = { ebook: 'eBook', audiobook: 'Audio', paperback: 'PB', hardcover: 'HC' };
+  const parts = [];
+  for (const [key] of PRICE_FORMATS) {
+    if (p[key] != null && p[key] !== '') parts.push(`${short[key]} ${cur}${Number(p[key]).toFixed(2)}`);
+  }
+  if (!parts.length && b.price != null) parts.push(`${cur}${Number(b.price).toFixed(2)}`);
+  return parts.join(' · ');
+}
 
 function platformTag(p) {
   return `<span class="plat"><span class="dot dot-${esc(p)}"></span>${esc(PLATFORM_ICON[p] || p)}</span>`;
@@ -641,7 +655,7 @@ views.books = async () => {
       <div class="card-head"><h3>${esc(b.title)}</h3>${statusBadge(b.status)}</div>
       <div class="muted" style="font-size:13px">${esc(b.genre)}${b.series ? ' · ' + esc(b.series) + (b.seriesNumber ? ' #' + b.seriesNumber : '') : ''}${b.publisher ? ' · ' + esc(b.publisher) : ''}</div>
       ${b.tagline ? `<div style="font-style:italic;margin-top:8px;color:var(--text-dim)">"${esc(b.tagline)}"</div>` : ''}
-      <div class="muted" style="font-size:13px;margin-top:8px">${b.releaseDate ? 'Releases ' + fmtDate(b.releaseDate) : 'No release date'} ${b.price != null ? '· ' + ((state.settings && state.settings.currencySymbol) || '$') + b.price : ''}</div>
+      <div class="muted" style="font-size:13px;margin-top:8px">${b.releaseDate ? 'Releases ' + fmtDate(b.releaseDate) : 'No release date'}${priceSummary(b) ? ' · ' + esc(priceSummary(b)) : ''}</div>
       ${b.tropes && b.tropes.length ? `<div class="btn-row" style="margin-top:10px">${b.tropes.slice(0, 4).map((t) => `<span class="pill">${esc(t)}</span>`).join('')}</div>` : ''}
       <div class="btn-row" style="margin-top:14px"><button class="btn sm" data-edit-book="${b.id}">Edit</button><button class="btn sm danger" data-del-book="${b.id}">Delete</button></div>
     </div>`;
@@ -657,6 +671,13 @@ function bookFormModal(existing) {
   const preferredOptions = ['<option value="">Auto (best available)</option>']
     .concat(prefKeys.map((k) => `<option value="${esc(k)}" ${b.preferredLink === k ? 'selected' : ''}>${esc(LINK_LABELS[k] || k)}</option>`))
     .join('');
+  const cur = currencySymbol();
+  const priceVal = (fmt) => {
+    const p = b.prices || {};
+    if (p[fmt] != null && p[fmt] !== '') return p[fmt];
+    if (fmt === 'ebook' && b.price != null) return b.price;
+    return '';
+  };
   openModal(`<h2>${existing ? 'Edit' : 'Add'} book</h2>
     <div class="field"><label>Title</label><input id="bf-title" value="${esc(b.title || '')}"></div>
     <div class="form-row">
@@ -670,9 +691,15 @@ function bookFormModal(existing) {
     <div class="field"><label>Publisher / imprint (optional)</label><input id="bf-publisher" value="${esc(b.publisher || '')}" placeholder="e.g. Spring Street Books"></div>
     <div class="field"><label>Tagline</label><input id="bf-tagline" value="${esc(b.tagline || '')}" placeholder="One irresistible line"></div>
     <div class="field"><label>Blurb</label><textarea id="bf-blurb" placeholder="The back-cover copy">${esc(b.blurb || '')}</textarea></div>
+    <div class="field"><label>Tropes (comma-separated)</label><input id="bf-tropes" value="${esc((b.tropes || []).join(', '))}" placeholder="fake engagement, workplace romance"></div>
+    <div class="section-title">Prices by format (${esc(cur)})</div>
     <div class="form-row">
-      <div class="field"><label>Tropes (comma-separated)</label><input id="bf-tropes" value="${esc((b.tropes || []).join(', '))}" placeholder="fake engagement, workplace romance"></div>
-      <div class="field"><label>Price</label><input type="number" step="0.01" id="bf-price" value="${b.price ?? ''}"></div>
+      <div class="field"><label>eBook</label><input type="number" step="0.01" min="0" id="bf-price-ebook" value="${esc(priceVal('ebook'))}"></div>
+      <div class="field"><label>Audiobook</label><input type="number" step="0.01" min="0" id="bf-price-audiobook" value="${esc(priceVal('audiobook'))}"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Paperback</label><input type="number" step="0.01" min="0" id="bf-price-paperback" value="${esc(priceVal('paperback'))}"></div>
+      <div class="field"><label>Hardcover</label><input type="number" step="0.01" min="0" id="bf-price-hardcover" value="${esc(priceVal('hardcover'))}"></div>
     </div>
     <div class="field"><label>Comparable authors / titles ("comps", comma-separated)</label><input id="bf-comps" value="${esc((b.comps || []).join(', '))}" placeholder="Marian Keyes, Beth O'Leary"></div>
     <div class="field"><label>Quotes (one per line)</label><textarea id="bf-quotes" placeholder="Pull quotes readers will screenshot">${esc((b.quotes || []).join('\n'))}</textarea></div>
@@ -698,8 +725,14 @@ function bookFormModal(existing) {
       comps: splitList($('#bf-comps').value),
       quotes: $('#bf-quotes').value.split('\n').map((s) => s.trim()).filter(Boolean),
       reviews: parseReviews($('#bf-reviews').value),
-      price: $('#bf-price').value ? Number($('#bf-price').value) : null,
     };
+    const prices = {};
+    for (const [fmt] of PRICE_FORMATS) {
+      const v = $(`#bf-price-${fmt}`).value;
+      if (v !== '') prices[fmt] = Number(v);
+    }
+    body.prices = prices;
+    body.price = prices.ebook != null ? prices.ebook : null; // keep the legacy single price = ebook
     const buyLinks = { ...(b.buyLinks || {}) };
     const setLink = (key, id) => { const v = $(id).value.trim(); if (v) buyLinks[key] = v; else delete buyLinks[key]; };
     setLink('universal', '#bl-universal');
@@ -836,9 +869,10 @@ views.settings = async () => {
         <div class="field"><label>Pen name</label><input id="a-pen" value="${esc(a.penName || '')}"></div>
         <div class="field"><label>Tagline</label><input id="a-tag" value="${esc(a.tagline || '')}"></div>
         <div class="field"><label>Bio</label><textarea id="a-bio">${esc(a.bio || '')}</textarea></div>
+        <div class="field"><label>Website / newsletter</label><input id="a-web" value="${esc(a.website || '')}"></div>
         <div class="form-row">
-          <div class="field"><label>Website / newsletter</label><input id="a-web" value="${esc(a.website || '')}"></div>
           <div class="field"><label>Timezone</label><select id="a-tz">${m.timezones.map((t) => `<option ${a.timezone === t ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></div>
+          <div class="field"><label>Currency</label><select id="a-currency">${CURRENCIES.map((c) => `<option value="${esc(c.symbol)}" ${currencySymbol() === c.symbol ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}</select></div>
         </div>
         <div class="section-title">Handles</div>
         <div class="help" style="margin-bottom:10px">Enter just the handle (e.g. <span class="mono">mofanningbooks</span>) — an @ or a full profile URL works too. For Bluesky use your full handle, e.g. <span class="mono">mofanning.bsky.social</span>. The planner schedules to exactly the channels you fill in (leave the rest blank).</div>
@@ -873,7 +907,12 @@ views.settings = async () => {
         website: $('#a-web').value, timezone: $('#a-tz').value, handles: newHandles,
       });
       state.author = author;
-      $('#foot-author').innerHTML = `Signed in as<br><strong>${esc(author.penName)}</strong>`;
+      const currency = $('#a-currency') ? $('#a-currency').value : null;
+      if (currency && currency !== currencySymbol()) {
+        state.settings = await api.put('/settings', { currencySymbol: currency });
+      }
+      $('#foot-author').innerHTML = `Signed in as<br><strong>${esc(author.penName)}</strong>`
+        + `<div style="margin-top:8px;font-size:11px;color:var(--text-faint)">AuthorLift v${esc(APP_VERSION)}</div>`;
       toast('Profile saved.');
     } catch (err) { toast(err.message, 'bad'); }
   });

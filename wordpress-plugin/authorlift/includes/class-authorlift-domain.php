@@ -102,7 +102,8 @@ class AuthorLift_Books {
             'quotes' => authorlift_string_array(isset($m['quotes']) ? $m['quotes'] : null, 'quotes', 50),
             'reviews' => self::normalize_reviews(isset($m['reviews']) ? $m['reviews'] : null),
             'buyLinks' => self::normalize_buy_links(isset($m['buyLinks']) ? $m['buyLinks'] : null),
-            'price' => authorlift_optional_number(isset($m['price']) ? $m['price'] : null, 'price', 0, 1000),
+            'price' => authorlift_optional_number(isset($m['price']) ? $m['price'] : null, 'price', 0, 100000),
+            'prices' => self::normalize_prices(isset($m['prices']) ? $m['prices'] : null),
             'releaseDate' => authorlift_parse_iso(isset($m['releaseDate']) ? $m['releaseDate'] : null),
             'status' => isset($m['status']) && $m['status'] ? authorlift_require_one_of($m['status'], AuthorLift_Enums::BOOK_STATUSES, 'status') : 'draft',
             'publisher' => authorlift_optional_string(isset($m['publisher']) ? $m['publisher'] : null, 'publisher', 200),
@@ -138,6 +139,22 @@ class AuthorLift_Books {
     // `universal` = a Books2Read-style link (all stores incl. Amazon);
     // `booklinker` = all Amazon storefronts; `signed` = the author's own webshop.
     const BUY_LINK_KEYS = array('universal', 'booklinker', 'linktree', 'signed', 'amazon', 'apple', 'kobo', 'barnesnoble', 'audible');
+
+    const PRICE_FORMATS = array('ebook', 'audiobook', 'paperback', 'hardcover');
+
+    private static function normalize_prices($prices) {
+        if (!is_array($prices)) {
+            return array();
+        }
+        $out = array();
+        foreach (self::PRICE_FORMATS as $fmt) {
+            $v = authorlift_optional_number(isset($prices[$fmt]) ? $prices[$fmt] : null, "prices.$fmt", 0, 100000);
+            if ($v !== null) {
+                $out[$fmt] = $v;
+            }
+        }
+        return $out;
+    }
 
     private static function normalize_buy_links($links) {
         if (!is_array($links)) {

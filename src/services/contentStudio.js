@@ -51,9 +51,19 @@ function firstSentence(text, max = 180) {
   return sentence.length > max ? `${sentence.slice(0, max - 1).trimEnd()}…` : sentence;
 }
 
-function priceString(book) {
-  if (typeof book.price !== 'number') return '';
-  return book.price === 0 ? 'FREE' : `$${book.price.toFixed(2)}`;
+function bookPrice(book) {
+  if (typeof book.price === 'number') return book.price;
+  const p = book.prices || {};
+  for (const fmt of ['ebook', 'paperback', 'hardcover', 'audiobook']) {
+    if (typeof p[fmt] === 'number') return p[fmt];
+  }
+  return null;
+}
+
+function priceString(book, currency = '$') {
+  const val = bookPrice(book);
+  if (val === null || val === undefined) return '';
+  return val === 0 ? 'FREE' : `${currency}${val.toFixed(2)}`;
 }
 
 const LINK_ORDER = ['universal', 'booklinker', 'amazon', 'linktree', 'apple', 'kobo', 'barnesnoble', 'audible', 'signed'];
@@ -94,7 +104,7 @@ function ctaFor(book, author) {
  * variant might need is pre-resolved here so variants stay one-liners and never
  * emit `undefined`.
  */
-function buildContext({ author, book, campaign, referenceDate, rng }) {
+function buildContext({ author, book, campaign, referenceDate, rng, currency = '$' }) {
   const title = book.title || 'my new book';
   const trope = pick(book.tropes, rng);
   const quote = pick(book.quotes, rng);
@@ -117,7 +127,7 @@ function buildContext({ author, book, campaign, referenceDate, rng }) {
     reviewText: review ? firstSentence(review.text, 160) : '',
     reviewStars: review ? '⭐'.repeat(review.rating || 5) : '⭐⭐⭐⭐⭐',
     daysToRelease,
-    price: priceString(book),
+    price: priceString(book, currency),
     cta: ctaFor(book, author),
     link: primaryLink(book),
     website: author?.website || '',
@@ -276,8 +286,9 @@ export function generateContent(store, options = {}) {
       ? seed
       : hashString(`${bookId || 'nobook'}:${postType}:${platform}:${seed ?? ''}`);
   const rng = seededRandom(seedValue);
+  const currency = (store.getSettings && store.getSettings().currencySymbol) || '$';
 
-  const ctx = buildContext({ author, book: effectiveBook, campaign, referenceDate, rng });
+  const ctx = buildContext({ author, book: effectiveBook, campaign, referenceDate, rng, currency });
 
   const variants = TEMPLATES[postType] || TEMPLATES.teaser;
   const idx =

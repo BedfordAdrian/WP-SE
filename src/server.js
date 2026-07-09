@@ -52,7 +52,7 @@ export function createApp(store) {
 
   api.get('/meta', (req, res) => {
     res.json({
-      version: '1.2.1',
+      version: '1.2.2',
       platforms: PLATFORMS,
       postTypes: POST_TYPES,
       postStatuses: POST_STATUSES,
@@ -192,6 +192,9 @@ export function createApp(store) {
     const patch = req.body || {};
     if (patch.activePublisher && !getPublisher(patch.activePublisher)) {
       return res.status(400).json({ error: `Unknown publisher: ${patch.activePublisher}` });
+    }
+    if (patch.currencySymbol !== undefined && !['$', '£', '€'].includes(patch.currencySymbol)) {
+      return res.status(400).json({ error: 'Unsupported currency', field: 'currencySymbol' });
     }
     res.json(store.updateSettings(patch));
   }));

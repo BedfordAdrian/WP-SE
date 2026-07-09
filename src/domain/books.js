@@ -58,6 +58,18 @@ function normalizeBuyLinks(links) {
   return out;
 }
 
+export const PRICE_FORMATS = ['ebook', 'audiobook', 'paperback', 'hardcover'];
+
+function normalizePrices(prices) {
+  if (!prices || typeof prices !== 'object') return {};
+  const out = {};
+  for (const fmt of PRICE_FORMATS) {
+    const v = optionalNumber(prices[fmt], `prices.${fmt}`, { min: 0, max: 100000 });
+    if (v !== undefined) out[fmt] = v;
+  }
+  return out;
+}
+
 export function normalizeBook(input = {}, existing = {}) {
   const merged = { ...existing, ...input };
   return {
@@ -74,7 +86,8 @@ export function normalizeBook(input = {}, existing = {}) {
     quotes: toStringArray(merged.quotes, 'quotes', { max: 50 }),
     reviews: normalizeReviews(merged.reviews),
     buyLinks: normalizeBuyLinks(merged.buyLinks),
-    price: optionalNumber(merged.price, 'price', { min: 0, max: 1000 }),
+    price: optionalNumber(merged.price, 'price', { min: 0, max: 100000 }),
+    prices: normalizePrices(merged.prices),
     releaseDate: optionalIsoDate(merged.releaseDate, 'releaseDate'),
     status: merged.status ? requireOneOf(merged.status, BOOK_STATUSES, 'status') : 'draft',
     publisher: optionalString(merged.publisher, 'publisher', { max: 200 }),

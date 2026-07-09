@@ -4,7 +4,7 @@ Tags: author, marketing, social-media, book-launch, scheduler, analytics
 Requires at least: 6.0
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -77,6 +77,16 @@ the plugin removes it.
 No. Content generation is template-based and runs entirely on your server.
 
 == Changelog ==
+
+= 1.2.2 =
+* Add a Currency picker (£ / $ / €) that drives the price fields and every money
+  display, including generated sale copy.
+* Replace the single price with per-format prices: eBook, Audiobook, Paperback
+  and Hardcover.
+
+= 1.2.1 =
+* Social handle fields now accept a bare handle, an @handle, or a full profile
+  URL and store just the handle.
 
 = 1.2.0 =
 * Add multiple buy-link fields per book: Books2Read universal, Booklinker (all

@@ -21,6 +21,14 @@ test('createBook validates and normalises', () => {
   assert.equal(book.status, 'draft');
 });
 
+test('createBook stores per-format prices', () => {
+  const store = freshStore();
+  const book = createBook(store, { title: 'X', prices: { ebook: 3.99, paperback: 9.99, hardcover: 16.99, audiobook: 12.99 } });
+  assert.equal(book.prices.ebook, 3.99);
+  assert.equal(book.prices.hardcover, 16.99);
+  assert.equal(book.price, undefined); // legacy single price left untouched by the API
+});
+
 test('createBook rejects missing title and bad genre', () => {
   const store = freshStore();
   assert.throws(() => createBook(store, {}), ValidationError);

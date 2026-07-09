@@ -234,6 +234,9 @@ class AuthorLift_REST {
             if (!empty($patch['activePublisher']) && !AuthorLift_Publishers::get($patch['activePublisher'])) {
                 return new WP_REST_Response(array('error' => 'Unknown publisher: ' . $patch['activePublisher']), 400);
             }
+            if (isset($patch['currencySymbol']) && !in_array($patch['currencySymbol'], array('$', '£', '€'), true)) {
+                return new WP_REST_Response(array('error' => 'Unsupported currency', 'field' => 'currencySymbol'), 400);
+            }
             return $store->update_settings($patch);
         });
         $this->route('/publishers', 'GET', function () {

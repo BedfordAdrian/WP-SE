@@ -77,6 +77,13 @@ test('released book CTA uses the buy link', () => {
   assert.match(c.cta, /buy\.example/);
 });
 
+test('sale copy uses the per-format price with the store currency symbol', () => {
+  const { store, book } = storeWithBook({ status: 'released', prices: { ebook: 3.99, paperback: 9.99 } });
+  store.updateSettings({ currencySymbol: '£' });
+  const c = generateContent(store, { bookId: book.id, postType: 'sale_announcement', platform: 'facebook', variantIndex: 0 });
+  assert.match(c.body, /£3\.99/);
+});
+
 test('preferred link overrides the default and signed copies get their own CTA', () => {
   const { store, book } = storeWithBook({
     buyLinks: { universal: 'https://b2r.example/x', signed: 'https://shop.example/signed' },
