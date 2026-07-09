@@ -621,7 +621,7 @@ views.books = async () => {
   function bookCard(b) {
     return `<div class="card">
       <div class="card-head"><h3>${esc(b.title)}</h3>${statusBadge(b.status)}</div>
-      <div class="muted" style="font-size:13px">${esc(b.genre)}${b.series ? ' · ' + esc(b.series) + (b.seriesNumber ? ' #' + b.seriesNumber : '') : ''}</div>
+      <div class="muted" style="font-size:13px">${esc(b.genre)}${b.series ? ' · ' + esc(b.series) + (b.seriesNumber ? ' #' + b.seriesNumber : '') : ''}${b.publisher ? ' · ' + esc(b.publisher) : ''}</div>
       ${b.tagline ? `<div style="font-style:italic;margin-top:8px;color:var(--text-dim)">"${esc(b.tagline)}"</div>` : ''}
       <div class="muted" style="font-size:13px;margin-top:8px">${b.releaseDate ? 'Releases ' + fmtDate(b.releaseDate) : 'No release date'} ${b.price != null ? '· ' + ((state.settings && state.settings.currencySymbol) || '$') + b.price : ''}</div>
       ${b.tropes && b.tropes.length ? `<div class="btn-row" style="margin-top:10px">${b.tropes.slice(0, 4).map((t) => `<span class="pill">${esc(t)}</span>`).join('')}</div>` : ''}
@@ -643,6 +643,7 @@ function bookFormModal(existing) {
       <div class="field"><label>Series</label><input id="bf-series" value="${esc(b.series || '')}"></div>
       <div class="field"><label>Release date</label><input type="date" id="bf-release" value="${b.releaseDate ? b.releaseDate.slice(0, 10) : ''}"></div>
     </div>
+    <div class="field"><label>Publisher / imprint (optional)</label><input id="bf-publisher" value="${esc(b.publisher || '')}" placeholder="e.g. Spring Street Books"></div>
     <div class="field"><label>Tagline</label><input id="bf-tagline" value="${esc(b.tagline || '')}" placeholder="One irresistible line"></div>
     <div class="field"><label>Blurb</label><textarea id="bf-blurb" placeholder="The back-cover copy">${esc(b.blurb || '')}</textarea></div>
     <div class="form-row">
@@ -659,6 +660,7 @@ function bookFormModal(existing) {
     const body = {
       title: $('#bf-title').value, genre: $('#bf-genre').value, status: $('#bf-status').value,
       series: $('#bf-series').value || null,
+      publisher: $('#bf-publisher').value || null,
       releaseDate: $('#bf-release').value ? new Date($('#bf-release').value).toISOString() : null,
       tagline: $('#bf-tagline').value || null, blurb: $('#bf-blurb').value || null,
       tropes: splitList($('#bf-tropes').value),
@@ -806,11 +808,12 @@ views.settings = async () => {
         ${handleRows.join('')}
         <button class="btn primary" id="a-save">Save profile</button>
       </div>
-      <div class="card"><h3>Publishing</h3>
-        <div class="field"><label>Active publisher</label>
+      <div class="card"><h3>Posting method</h3>
+        <div class="help" style="margin-bottom:10px">How AuthorLift sends your scheduled posts out. This is <em>not</em> your book's publisher — record that on each book (Books → Publisher / imprint).</div>
+        <div class="field"><label>Send posts via</label>
           <select id="set-pub">${publishers.map((p) => `<option value="${esc(p.name)}" ${settings.activePublisher === p.name ? 'selected' : ''}>${esc(titleCase(p.name))}${p.simulated ? ' — simulated' : ''}</option>`).join('')}</select>
         </div>
-        <button class="btn" id="set-save">Save publisher</button>
+        <button class="btn" id="set-save">Save</button>
         <div class="help" style="margin-top:12px">
           <strong>Simulated</strong> — generates realistic engagement locally; nothing is posted to a live network (good for demos/dry runs).<br>
           <strong>Manual</strong> — marks posts as published without inventing any numbers; use this when you post to your networks yourself. Metrics stay at zero until you record real ones.<br>

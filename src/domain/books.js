@@ -74,6 +74,7 @@ export function normalizeBook(input = {}, existing = {}) {
     price: optionalNumber(merged.price, 'price', { min: 0, max: 1000 }),
     releaseDate: optionalIsoDate(merged.releaseDate, 'releaseDate'),
     status: merged.status ? requireOneOf(merged.status, BOOK_STATUSES, 'status') : 'draft',
+    publisher: optionalString(merged.publisher, 'publisher', { max: 200 }),
     coverImageUrl: optionalString(merged.coverImageUrl, 'coverImageUrl', { max: 500 }),
   };
 }

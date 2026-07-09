@@ -212,6 +212,7 @@ class AuthorLift_Content {
             'cta' => self::cta_for($book, $author),
             'link' => self::primary_link($book),
             'website' => isset($author['website']) ? $author['website'] : '',
+            'imprint' => isset($book['publisher']) ? $book['publisher'] : '',
         );
     }
 
@@ -244,7 +245,7 @@ class AuthorLift_Content {
                 },
             ),
             'launch_day' => array(
-                function ($c) { return "IT'S RELEASE DAY!!! 🎉📚\n\n\"{$c['title']}\" is officially out in the world. {$c['hook']}\n\n{$c['cta']}"; },
+                function ($c) { return "IT'S RELEASE DAY!!! 🎉📚\n\n\"{$c['title']}\" is officially out in the world" . ($c['imprint'] ? " from {$c['imprint']}" : '') . ". {$c['hook']}\n\n{$c['cta']}"; },
                 function ($c) { return "The day is finally here. \"{$c['title']}\" is LIVE. 🎉\n\nThank you for being here for this. Now go meet " . ($c['trope'] ? "the {$c['trope']}" : 'these characters') . " I love so much.\n\n{$c['cta']}"; },
             ),
             'review_highlight' => array(

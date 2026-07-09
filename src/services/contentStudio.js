@@ -114,6 +114,7 @@ function buildContext({ author, book, campaign, referenceDate, rng }) {
     cta: ctaFor(book, author),
     link: primaryLink(book),
     website: author?.website || '',
+    imprint: book.publisher || '',
   };
 }
 
@@ -146,7 +147,7 @@ const TEMPLATES = {
     },
   ],
   launch_day: [
-    (c) => `IT'S RELEASE DAY!!! 🎉📚\n\n"${c.title}" is officially out in the world. ${c.hook}\n\n${c.cta}`,
+    (c) => `IT'S RELEASE DAY!!! 🎉📚\n\n"${c.title}" is officially out in the world${c.imprint ? ` from ${c.imprint}` : ''}. ${c.hook}\n\n${c.cta}`,
     (c) => `The day is finally here. "${c.title}" is LIVE. 🎉\n\nThank you for being here for this. Now go meet ${c.trope ? `the ${c.trope}` : 'these characters'} I love so much.\n\n${c.cta}`,
   ],
   review_highlight: [

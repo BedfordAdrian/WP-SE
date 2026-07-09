@@ -4,7 +4,7 @@ Tags: author, marketing, social-media, book-launch, scheduler, analytics
 Requires at least: 6.0
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -77,6 +77,15 @@ the plugin removes it.
 No. Content generation is template-based and runs entirely on your server.
 
 == Changelog ==
+
+= 1.1.0 =
+* Add Bluesky and a handle field for every network in Settings.
+* Add a "Manual" posting method (publishes without fabricating metrics) and
+  relabel the "publisher" setting to "Posting method" to avoid confusion with a
+  book's publisher.
+* Add a Publisher / imprint field to each book (e.g. "Spring Street Books").
+* Add "Clear sample data & start fresh".
+* Version admin assets by file mtime so in-place updates always load fresh JS/CSS.
 
 = 1.0.0 =
 * Initial release: Content Studio, Campaign Planner, scheduler, pluggable

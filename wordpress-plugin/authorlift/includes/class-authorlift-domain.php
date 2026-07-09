@@ -88,6 +88,7 @@ class AuthorLift_Books {
             'price' => authorlift_optional_number(isset($m['price']) ? $m['price'] : null, 'price', 0, 1000),
             'releaseDate' => authorlift_parse_iso(isset($m['releaseDate']) ? $m['releaseDate'] : null),
             'status' => isset($m['status']) && $m['status'] ? authorlift_require_one_of($m['status'], AuthorLift_Enums::BOOK_STATUSES, 'status') : 'draft',
+            'publisher' => authorlift_optional_string(isset($m['publisher']) ? $m['publisher'] : null, 'publisher', 200),
             'coverImageUrl' => authorlift_optional_string(isset($m['coverImageUrl']) ? $m['coverImageUrl'] : null, 'coverImageUrl', 500),
         );
     }

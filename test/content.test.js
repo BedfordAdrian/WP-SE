@@ -65,6 +65,12 @@ test('countdown reflects days to release via referenceDate', () => {
   assert.match(c.body, /5 days/);
 });
 
+test('launch_day copy credits the publisher/imprint when set', () => {
+  const { store, book } = storeWithBook({ publisher: 'Spring Street Books' });
+  const c = generateContent(store, { bookId: book.id, postType: 'launch_day', platform: 'facebook', variantIndex: 0 });
+  assert.match(c.body, /from Spring Street Books/);
+});
+
 test('released book CTA uses the buy link', () => {
   const { store, book } = storeWithBook();
   const c = generateContent(store, { bookId: book.id, postType: 'launch_day', platform: 'facebook' });

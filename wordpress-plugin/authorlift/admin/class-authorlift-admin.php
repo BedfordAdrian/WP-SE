@@ -28,8 +28,14 @@ class AuthorLift_Admin {
         if ($hook !== self::HOOK_SUFFIX) {
             return;
         }
-        wp_enqueue_style('authorlift', AUTHORLIFT_URL . 'admin/css/styles.css', array(), AUTHORLIFT_VERSION);
-        wp_enqueue_script('authorlift', AUTHORLIFT_URL . 'admin/js/app.js', array(), AUTHORLIFT_VERSION, true);
+        // Version assets by file mtime so an in-place plugin update always busts
+        // the browser cache (otherwise a stale app.js/styles.css can linger).
+        $jsPath = AUTHORLIFT_DIR . 'admin/js/app.js';
+        $cssPath = AUTHORLIFT_DIR . 'admin/css/styles.css';
+        $jsVer = file_exists($jsPath) ? (string) filemtime($jsPath) : AUTHORLIFT_VERSION;
+        $cssVer = file_exists($cssPath) ? (string) filemtime($cssPath) : AUTHORLIFT_VERSION;
+        wp_enqueue_style('authorlift', AUTHORLIFT_URL . 'admin/css/styles.css', array(), $cssVer);
+        wp_enqueue_script('authorlift', AUTHORLIFT_URL . 'admin/js/app.js', array(), $jsVer, true);
         wp_localize_script('authorlift', 'AuthorLiftConfig', array(
             'root' => esc_url_raw(rest_url('authorlift/v1')),
             'nonce' => wp_create_nonce('wp_rest'),
