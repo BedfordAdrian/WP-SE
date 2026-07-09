@@ -50,6 +50,16 @@ test('generation is deterministic for a fixed seed', () => {
   assert.equal(a.body, b.body);
 });
 
+test('generateContent returns a platform-tailored text-to-image prompt', () => {
+  const { store, book } = storeWithBook();
+  const c = generateContent(store, { bookId: book.id, postType: 'quote_card', platform: 'instagram' });
+  assert.ok(c.imagePrompt && c.imagePrompt.length > 20);
+  assert.match(c.imagePrompt, /4:5/); // instagram aspect ratio
+  assert.match(c.imagePrompt, /no text/); // image models render lettering poorly
+  const c2 = generateContent(store, { bookId: book.id, postType: 'launch_day', platform: 'tiktok' });
+  assert.match(c2.imagePrompt, /9:16/); // tiktok aspect ratio
+});
+
 test('newsletter posts carry no hashtags', () => {
   const { store, book } = storeWithBook();
   const c = generateContent(store, { bookId: book.id, postType: 'newsletter_cta', platform: 'newsletter' });

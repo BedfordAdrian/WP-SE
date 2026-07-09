@@ -46,6 +46,7 @@ export function normalizePost(input = {}, existing = {}) {
     ),
     cta: optionalString(merged.cta, 'cta', { max: 300 }),
     mediaSuggestion: optionalString(merged.mediaSuggestion, 'mediaSuggestion', { max: 500 }),
+    imagePrompt: optionalString(merged.imagePrompt, 'imagePrompt', { max: 2000 }),
     bookId: merged.bookId ?? null,
     campaignId: merged.campaignId ?? null,
     scheduledAt: optionalIsoDate(merged.scheduledAt, 'scheduledAt') ?? null,

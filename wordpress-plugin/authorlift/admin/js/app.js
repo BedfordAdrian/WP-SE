@@ -37,7 +37,7 @@ const api = {
 // Version baked into this JS file. Compared against the server version (which is
 // delivered inline and therefore never cached) to detect a stale cached
 // dashboard — the usual cause of "the new option isn't showing up".
-const APP_VERSION = '1.2.2';
+const APP_VERSION = '1.3.0';
 const AL_SERVER_VERSION = (typeof AuthorLiftConfig !== 'undefined' && AuthorLiftConfig.serverVersion) || null;
 
 // ---------------------------------------------------------------- utilities
@@ -117,6 +117,20 @@ function openModal(html) {
   $('#mbd').addEventListener('click', (e) => { if (e.target.id === 'mbd') closeModal(); });
 }
 function closeModal() { $('#modal-root').innerHTML = ''; }
+
+function copyText(text) {
+  const done = () => toast('Copied to clipboard.');
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) { toast('Copy failed — select the text manually.', 'bad'); }
+    ta.remove();
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(fallback);
+  } else { fallback(); }
+}
 
 // ---------------------------------------------------------------- charts (SVG)
 // Only allow hex, CSS custom properties, or bare color names into SVG
@@ -410,10 +424,13 @@ views.studio = async () => {
       <div class="post-preview">${esc(c.body)}${c.hashtags.length ? `\n\n<span class="tags">${esc(c.hashtags.join(' '))}</span>` : ''}</div>
       <div class="char-count ${over ? 'over' : ''}">${len}${limit ? ' / ' + limit : ''} chars</div>
       <div class="help">📎 ${esc(c.mediaSuggestion)}</div>
+      <div class="help" style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span>🎨 <strong>Image prompt</strong> — paste into Midjourney, DALL·E, Canva, etc.</span><button class="btn sm" id="s-copyprompt">Copy prompt</button></div>
+      <div class="post-preview" style="font-size:12.5px;color:var(--text-dim);margin-top:6px">${esc(c.imagePrompt || '')}</div>
       <div class="btn-row" style="margin-top:14px">
         <button class="btn" id="s-draft">Save as draft</button>
         <button class="btn primary" id="s-schedule">🗓️ Schedule…</button>
       </div>`;
+    $('#s-copyprompt').addEventListener('click', () => copyText(c.imagePrompt || ''));
     $('#s-draft').addEventListener('click', () => savePost('draft'));
     $('#s-schedule').addEventListener('click', () => scheduleModal());
   }
@@ -422,7 +439,7 @@ views.studio = async () => {
     try {
       await api.post('/posts', {
         platform: current.platform, type: current.type, body: current.body, hashtags: current.hashtags,
-        cta: current.cta, mediaSuggestion: current.mediaSuggestion, bookId: current.bookId,
+        cta: current.cta, mediaSuggestion: current.mediaSuggestion, imagePrompt: current.imagePrompt, bookId: current.bookId,
         status, scheduledAt,
       });
       toast(status === 'scheduled' ? 'Post scheduled!' : 'Saved to drafts.');
@@ -611,6 +628,7 @@ views.calendar = async () => {
           <div class="txt">${esc(p.body.slice(0, 200))}${p.body.length > 200 ? '…' : ''}</div>
         </div>
         <div class="row-actions">
+          ${p.imagePrompt ? `<button class="btn sm" data-imgprompt="${esc(p.imagePrompt)}" title="Copy the text-to-image prompt">🎨</button>` : ''}
           ${p.status !== 'published' ? `<button class="btn sm" data-pub="${p.id}">Publish now</button>` : ''}
           ${p.status !== 'published' ? `<button class="btn sm danger" data-del="${p.id}">✕</button>` : ''}
         </div>
@@ -631,6 +649,7 @@ views.calendar = async () => {
   $$('[data-del]').forEach((b) => b.addEventListener('click', async () => {
     await api.del(`/posts/${b.dataset.del}`); toast('Deleted.'); route();
   }));
+  $$('[data-imgprompt]').forEach((b) => b.addEventListener('click', () => copyText(b.dataset.imgprompt)));
 };
 
 // ---- Books ----

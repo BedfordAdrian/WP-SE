@@ -201,6 +201,7 @@ export function planCampaign(store, campaignId, options = {}) {
       hashtags: item.hashtags,
       cta: item.cta,
       mediaSuggestion: item.mediaSuggestion,
+      imagePrompt: item.imagePrompt,
       bookId: item.bookId,
       campaignId,
       scheduledAt: item.scheduledAt,

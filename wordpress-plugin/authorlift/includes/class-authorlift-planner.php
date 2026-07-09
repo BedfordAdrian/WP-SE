@@ -193,6 +193,7 @@ class AuthorLift_Planner {
                 'hashtags' => $item['hashtags'],
                 'cta' => $item['cta'],
                 'mediaSuggestion' => $item['mediaSuggestion'],
+                'imagePrompt' => isset($item['imagePrompt']) ? $item['imagePrompt'] : null,
                 'bookId' => $item['bookId'],
                 'campaignId' => $campaignId,
                 'scheduledAt' => $item['scheduledAt'],

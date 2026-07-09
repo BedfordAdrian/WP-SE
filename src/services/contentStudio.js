@@ -309,9 +309,70 @@ export function generateContent(store, options = {}) {
     hashtags: fitted.hashtags,
     cta: ctx.cta,
     mediaSuggestion: suggestMedia(postType, ctx),
+    imagePrompt: suggestImagePrompt(postType, platform, ctx),
     preview: fitted.text,
     emoji: emojiFor[postType] || '📚',
   };
+}
+
+// Social image aspect ratio per platform (helps the author target the crop).
+const ASPECT = { twitter: '16:9', bluesky: '16:9', instagram: '4:5', facebook: '1.91:1', tiktok: '9:16', threads: '4:5', newsletter: '16:9' };
+
+const GENRE_STYLE = {
+  'Romantic Comedy': 'bright and playful, sunny pastel palette, warm upbeat rom-com energy, contemporary',
+  Romance: 'romantic and dreamy, warm golden light, soft focus, intimate',
+  Romantasy: 'lush fantasy-romance, jewel tones, ethereal magical glow, ornate detail',
+  Fantasy: 'epic and atmospheric, dramatic lighting, rich saturated colour, sense of wonder',
+  'Science Fiction': 'sleek and futuristic, cool tones with neon accents, cinematic sci-fi',
+  Thriller: 'dark and tense, high contrast, cool desaturated palette, cinematic',
+  Mystery: 'moody noir, shadowy, muted tones, intriguing',
+  Horror: 'eerie and unsettling, dark palette, ominous atmosphere',
+  'Historical Fiction': 'period-authentic, warm vintage tones, painterly',
+  'Young Adult': 'vibrant and fresh, bold colour, energetic and youthful',
+  'Literary Fiction': 'understated and elegant, muted natural palette, artful',
+  Memoir: 'warm and authentic, natural light, personal',
+  Nonfiction: 'clean and confident, bold minimal graphic style',
+  'Self-Help': 'bright and uplifting, clean and minimal, optimistic',
+};
+
+function genreStyle(genre) {
+  return GENRE_STYLE[genre] || 'clean, contemporary and on-brand';
+}
+
+function sceneFor(postType, ctx) {
+  const trope = ctx.trope ? ` evoking "${ctx.trope}"` : '';
+  const mood = ctx.tagline || ctx.hook || '';
+  switch (postType) {
+    case 'quote_card': return 'an elegant textured background with a soft gradient and generous empty space to overlay a short quote';
+    case 'cover_reveal': return 'a dramatic cover-reveal composition: a closed hardcover book at a flattering three-quarter angle under soft studio light with a subtle sparkle, celebratory';
+    case 'countdown': return 'a countdown-announcement background with the book and a calendar or clock motif and clear empty space for a large number';
+    case 'launch_day': return 'a joyful book-launch flat-lay: the book surrounded by confetti, ribbon and a coffee cup, bright and festive, top-down';
+    case 'preorder_push': return 'an enticing pre-order flat-lay: the book styled on a desk with a "coming soon" mood, bright';
+    case 'review_highlight': return 'a clean testimonial background with a row of five gold stars and soft bokeh, with empty space for a short quote';
+    case 'behind_the_scenes': return 'a cozy author writing-desk scene: laptop, notebook, coffee and plants in warm natural window light, candid and authentic';
+    case 'trope_appeal': return `an evocative, cinematic mood image${trope}`;
+    case 'character_spotlight': return `an atmospheric character-mood scene with no recognisable face${trope}, cinematic`;
+    case 'giveaway': return 'an inviting giveaway prize flat-lay: a signed book with ribbon, a bookmark and small gifts on a styled surface, top-down';
+    case 'newsletter_cta': return 'a tempting reader-magnet mockup: an e-reader and a printed freebie on a cozy styled desk';
+    case 'sale_announcement': return 'a bold, energetic sale-announcement background with dynamic shapes and empty space for text';
+    case 'milestone': return 'a celebratory milestone background with confetti and a warm glow, with empty space for text';
+    case 'question_engagement': return 'a friendly conversational flat-lay: the book, a coffee and a subtle question-mark motif, with empty space for text';
+    case 'teaser':
+    default: return `an intriguing, cinematic teaser image${mood ? ` evoking "${mood}"` : ''}, atmospheric`;
+  }
+}
+
+/**
+ * A ready-to-paste text-to-image prompt (Midjourney / DALL·E / Stable Diffusion
+ * / Canva) for the visual this post needs. Deliberately asks for NO text, since
+ * image models render lettering poorly — the author overlays real copy.
+ */
+function suggestImagePrompt(postType, platform, ctx) {
+  const scene = sceneFor(postType, ctx);
+  const aspect = ASPECT[platform] || '4:5';
+  const book = `the ${String(ctx.genre || 'book').toLowerCase()} "${ctx.title}"${ctx.tagline ? ` (${ctx.tagline})` : ''}`;
+  const opener = scene.charAt(0).toUpperCase() + scene.slice(1);
+  return `${opener}. Inspired by ${book}. Style: ${genreStyle(ctx.genre)}. ${aspect} social-media graphic, high quality and tasteful, no text, no lettering, no watermark.`;
 }
 
 function suggestMedia(postType, ctx) {

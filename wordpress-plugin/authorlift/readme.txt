@@ -4,7 +4,7 @@ Tags: author, marketing, social-media, book-launch, scheduler, analytics
 Requires at least: 6.0
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 1.2.2
+Stable tag: 1.3.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -77,6 +77,12 @@ the plugin removes it.
 No. Content generation is template-based and runs entirely on your server.
 
 == Changelog ==
+
+= 1.3.0 =
+* Every suggested visual now comes with a ready-to-paste text-to-image prompt
+  (Midjourney / DALL-E / Stable Diffusion / Canva), tailored to the book's genre
+  and tropes and the platform's aspect ratio. Copy it from the Content Studio or
+  the Calendar.
 
 = 1.2.2 =
 * Add a Currency picker (£ / $ / €) that drives the price fields and every money

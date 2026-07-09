@@ -285,6 +285,7 @@ class AuthorLift_Posts {
             'hashtags' => $hashtags,
             'cta' => authorlift_optional_string(isset($m['cta']) ? $m['cta'] : null, 'cta', 300),
             'mediaSuggestion' => authorlift_optional_string(isset($m['mediaSuggestion']) ? $m['mediaSuggestion'] : null, 'mediaSuggestion', 500),
+            'imagePrompt' => authorlift_optional_string(isset($m['imagePrompt']) ? $m['imagePrompt'] : null, 'imagePrompt', 2000),
             'bookId' => isset($m['bookId']) ? $m['bookId'] : null,
             'campaignId' => isset($m['campaignId']) ? $m['campaignId'] : null,
             'scheduledAt' => authorlift_parse_iso(isset($m['scheduledAt']) ? $m['scheduledAt'] : null),
