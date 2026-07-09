@@ -34,6 +34,12 @@ const api = {
   del(p) { return this.req('DELETE', p); },
 };
 
+// Version baked into this JS file. Compared against the server version (which is
+// delivered inline and therefore never cached) to detect a stale cached
+// dashboard — the usual cause of "the new option isn't showing up".
+const APP_VERSION = '1.2.0';
+const AL_SERVER_VERSION = (typeof AuthorLiftConfig !== 'undefined' && AuthorLiftConfig.serverVersion) || null;
+
 // ---------------------------------------------------------------- utilities
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -73,6 +79,7 @@ function titleCase(s) {
 }
 const PLATFORM_ICON = { twitter: 'Twitter/X', bluesky: 'Bluesky', instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok', threads: 'Threads', newsletter: 'Newsletter' };
 const PLATFORM_COLOR = { twitter: '#1d9bf0', bluesky: '#0085ff', instagram: '#e1306c', facebook: '#1877f2', tiktok: '#25f4ee', threads: '#b478f6', newsletter: '#f59e0b' };
+const LINK_LABELS = { universal: 'Books2Read universal', booklinker: 'Booklinker (all Amazon)', linktree: 'Linktree', signed: 'Signed copies (webshop)', amazon: 'Amazon', apple: 'Apple Books', kobo: 'Kobo', barnesnoble: 'Barnes & Noble', audible: 'Audible' };
 
 function platformTag(p) {
   return `<span class="plat"><span class="dot dot-${esc(p)}"></span>${esc(PLATFORM_ICON[p] || p)}</span>`;
@@ -219,9 +226,14 @@ async function boot() {
     state.meta = meta;
     state.author = author;
     state.settings = settings;
-    $('#foot-author').innerHTML = author
+    const serverVersion = AL_SERVER_VERSION || (meta && meta.version) || null;
+    if (serverVersion && serverVersion !== APP_VERSION) {
+      state.staleAssets = { loaded: APP_VERSION, server: serverVersion };
+    }
+    $('#foot-author').innerHTML = (author
       ? `Signed in as<br><strong>${esc(author.penName)}</strong>`
-      : 'No author profile yet';
+      : 'No author profile yet')
+      + `<div style="margin-top:8px;font-size:11px;color:var(--text-faint)">AuthorLift v${esc(APP_VERSION)}</div>`;
   } catch (err) {
     main.innerHTML = `<div class="empty"><div class="big">🔌</div>Could not reach the API.<br><span class="muted">${esc(err.message)}</span></div>`;
     return;
@@ -248,8 +260,14 @@ async function route() {
   }
 }
 
+function staleBanner() {
+  if (!state.staleAssets) return '';
+  const s = state.staleAssets;
+  return `<div class="disclosure" style="background:rgba(248,113,113,0.14);border-color:rgba(248,113,113,0.5)">⚠️ <strong>Cached dashboard.</strong> This page loaded an older cached version (v${esc(s.loaded)}) but the plugin on the server is v${esc(s.server)}, so new options (like Bluesky) won't show. Hard-refresh with <strong>Ctrl/Cmd+Shift+R</strong>; if you run a caching/optimization plugin (WP Rocket, LiteSpeed, W3 Total Cache, Autoptimize), purge its cache too.</div>`;
+}
+
 function pageHead(title, sub, actions = '') {
-  return `<div class="page-head"><div><h1 class="page-title">${esc(title)}</h1>${sub ? `<p class="page-sub">${esc(sub)}</p>` : ''}</div><div class="btn-row">${actions}</div></div>`;
+  return staleBanner() + `<div class="page-head"><div><h1 class="page-title">${esc(title)}</h1>${sub ? `<p class="page-sub">${esc(sub)}</p>` : ''}</div><div class="btn-row">${actions}</div></div>`;
 }
 
 // ---------------------------------------------------------------- views
@@ -633,6 +651,12 @@ views.books = async () => {
 function bookFormModal(existing) {
   const m = state.meta;
   const b = existing || {};
+  const bl = b.buyLinks || {};
+  const baseLinkKeys = ['universal', 'booklinker', 'linktree', 'signed'];
+  const prefKeys = [...baseLinkKeys, ...Object.keys(bl).filter((k) => !baseLinkKeys.includes(k))];
+  const preferredOptions = ['<option value="">Auto (best available)</option>']
+    .concat(prefKeys.map((k) => `<option value="${esc(k)}" ${b.preferredLink === k ? 'selected' : ''}>${esc(LINK_LABELS[k] || k)}</option>`))
+    .join('');
   openModal(`<h2>${existing ? 'Edit' : 'Add'} book</h2>
     <div class="field"><label>Title</label><input id="bf-title" value="${esc(b.title || '')}"></div>
     <div class="form-row">
@@ -653,7 +677,14 @@ function bookFormModal(existing) {
     <div class="field"><label>Comparable authors / titles ("comps", comma-separated)</label><input id="bf-comps" value="${esc((b.comps || []).join(', '))}" placeholder="Marian Keyes, Beth O'Leary"></div>
     <div class="field"><label>Quotes (one per line)</label><textarea id="bf-quotes" placeholder="Pull quotes readers will screenshot">${esc((b.quotes || []).join('\n'))}</textarea></div>
     <div class="field"><label>Reviews (one per line: <span class="mono">Source | rating | text</span>)</label><textarea id="bf-reviews" placeholder="Goodreads | 5 | Couldn't put it down.">${esc((b.reviews || []).map((r) => `${r.source} | ${r.rating} | ${r.text}`).join('\n'))}</textarea></div>
-    <div class="field"><label>Amazon / universal buy link</label><input id="bf-buy" value="${esc((b.buyLinks && (b.buyLinks.universal || b.buyLinks.amazon)) || '')}"></div>
+    <div class="section-title">Buy links</div>
+    <div class="field"><label>Books2Read universal (all stores incl. Amazon)</label><input id="bl-universal" value="${esc(bl.universal || '')}" placeholder="https://books2read.com/…"></div>
+    <div class="field"><label>Booklinker / mybook.to (all Amazon stores)</label><input id="bl-booklinker" value="${esc(bl.booklinker || '')}" placeholder="https://mybook.to/…"></div>
+    <div class="form-row">
+      <div class="field"><label>Linktree</label><input id="bl-linktree" value="${esc(bl.linktree || '')}" placeholder="https://linktr.ee/…"></div>
+      <div class="field"><label>Signed copies (your webshop)</label><input id="bl-signed" value="${esc(bl.signed || '')}" placeholder="https://your.shop/…"></div>
+    </div>
+    <div class="field"><label>Preferred link (used in generated posts)</label><select id="bl-preferred">${preferredOptions}</select></div>
     <div class="modal-foot"><button class="btn ghost" id="bf-cancel">Cancel</button><button class="btn primary" id="bf-save">Save</button></div>`);
   $('#bf-cancel').addEventListener('click', closeModal);
   $('#bf-save').addEventListener('click', async () => {
@@ -669,8 +700,14 @@ function bookFormModal(existing) {
       reviews: parseReviews($('#bf-reviews').value),
       price: $('#bf-price').value ? Number($('#bf-price').value) : null,
     };
-    const buy = $('#bf-buy').value.trim();
-    if (buy) body.buyLinks = { ...(b.buyLinks || {}), universal: buy };
+    const buyLinks = { ...(b.buyLinks || {}) };
+    const setLink = (key, id) => { const v = $(id).value.trim(); if (v) buyLinks[key] = v; else delete buyLinks[key]; };
+    setLink('universal', '#bl-universal');
+    setLink('booklinker', '#bl-booklinker');
+    setLink('linktree', '#bl-linktree');
+    setLink('signed', '#bl-signed');
+    body.buyLinks = buyLinks;
+    body.preferredLink = $('#bl-preferred').value || null;
     try {
       if (existing) await api.put(`/books/${existing.id}`, body);
       else await api.post('/books', body);
@@ -699,7 +736,7 @@ function importBookModal() {
   openModal(`<h2>Import book data</h2>
     <p class="modal-sub">Paste a title (or an array of titles) as JSON to absorb it in one step. AuthorLift immediately builds content and campaigns from it.</p>
     <div class="field"><textarea id="imp-json" style="min-height:220px" placeholder='{\n  "title": "Your Next Book",\n  "genre": "Romantic Comedy",\n  "status": "preorder",\n  "tagline": "…",\n  "blurb": "…",\n  "tropes": ["…"],\n  "comps": ["Marian Keyes"],\n  "reviews": [{ "source": "ARC reader", "rating": 5, "text": "…" }],\n  "buyLinks": { "universal": "https://…" },\n  "releaseDate": "2026-11-01"\n}'></textarea></div>
-    <div class="help">Recognised fields: title, genre, status, series, seriesNumber, tagline, blurb, tropes[], comps[], keywords[], subgenres[], quotes[], reviews[{source,rating,text}], buyLinks{universal,amazon,apple,kobo,…}, price, releaseDate.</div>
+    <div class="help">Recognised fields: title, genre, status, series, seriesNumber, publisher, tagline, blurb, tropes[], comps[], keywords[], subgenres[], quotes[], reviews[{source,rating,text}], buyLinks{universal,booklinker,linktree,signed,amazon,apple,kobo,…}, preferredLink, price, releaseDate.</div>
     <div class="modal-foot"><button class="btn ghost" id="imp-cancel">Cancel</button><button class="btn primary" id="imp-go">Import</button></div>`);
   $('#imp-cancel').addEventListener('click', closeModal);
   $('#imp-go').addEventListener('click', async () => {

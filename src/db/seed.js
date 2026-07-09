@@ -53,7 +53,10 @@ export async function seed(store, { now = new Date() } = {}) {
     // Intentionally no fabricated quotes/reviews — add real ones in the Books editor.
     quotes: [],
     reviews: [],
-    buyLinks: { universal: 'https://books2read.com/absolutely' },
+    buyLinks: {
+      universal: 'https://books2read.com/absolutely',
+      signed: 'https://shop.mofanning.co.uk/products/lisa-doyle-is-absolutely-fine-1',
+    },
     releaseDate,
     status: 'released',
   });

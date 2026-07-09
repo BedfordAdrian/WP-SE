@@ -43,11 +43,14 @@ function clampRating(rating) {
   return Math.max(1, Math.min(5, Math.round(n)));
 }
 
+// `universal` is a Books2Read-style link (all stores incl. Amazon); `booklinker`
+// covers all Amazon storefronts; `signed` is the author's own webshop.
+export const BUY_LINK_KEYS = ['universal', 'booklinker', 'linktree', 'signed', 'amazon', 'apple', 'kobo', 'barnesnoble', 'audible'];
+
 function normalizeBuyLinks(links) {
   if (!links || typeof links !== 'object') return {};
-  const allowed = ['amazon', 'kobo', 'apple', 'barnesnoble', 'universal', 'audible'];
   const out = {};
-  for (const key of allowed) {
+  for (const key of BUY_LINK_KEYS) {
     if (typeof links[key] === 'string' && links[key].trim()) {
       out[key] = links[key].trim();
     }
@@ -75,6 +78,7 @@ export function normalizeBook(input = {}, existing = {}) {
     releaseDate: optionalIsoDate(merged.releaseDate, 'releaseDate'),
     status: merged.status ? requireOneOf(merged.status, BOOK_STATUSES, 'status') : 'draft',
     publisher: optionalString(merged.publisher, 'publisher', { max: 200 }),
+    preferredLink: merged.preferredLink && BUY_LINK_KEYS.includes(merged.preferredLink) ? merged.preferredLink : null,
     coverImageUrl: optionalString(merged.coverImageUrl, 'coverImageUrl', { max: 500 }),
   };
 }

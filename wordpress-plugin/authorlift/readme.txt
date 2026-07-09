@@ -4,7 +4,7 @@ Tags: author, marketing, social-media, book-launch, scheduler, analytics
 Requires at least: 6.0
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -77,6 +77,14 @@ the plugin removes it.
 No. Content generation is template-based and runs entirely on your server.
 
 == Changelog ==
+
+= 1.2.0 =
+* Add multiple buy-link fields per book: Books2Read universal, Booklinker (all
+  Amazon stores), Linktree, and a direct "signed copies" webshop link, plus a
+  "preferred link" that controls which one appears in generated posts (with an
+  "Order a signed copy" call to action when the webshop link is preferred).
+* Show the running version in the sidebar and warn if the browser is showing a
+  cached (stale) dashboard, to make upgrade/caching issues obvious.
 
 = 1.1.0 =
 * Add Bluesky and a handle field for every network in Settings.

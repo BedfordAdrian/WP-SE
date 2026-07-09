@@ -56,26 +56,33 @@ function priceString(book) {
   return book.price === 0 ? 'FREE' : `$${book.price.toFixed(2)}`;
 }
 
-function primaryLink(book) {
+const LINK_ORDER = ['universal', 'booklinker', 'amazon', 'linktree', 'apple', 'kobo', 'barnesnoble', 'audible', 'signed'];
+
+// Pick the buy link used in generated posts: the book's preferred link if set
+// and present, otherwise the best available by broad-reach order.
+function chosenLink(book) {
   const links = book.buyLinks || {};
-  return (
-    links.universal ||
-    links.amazon ||
-    links.apple ||
-    links.kobo ||
-    links.barnesnoble ||
-    links.audible ||
-    ''
-  );
+  if (book.preferredLink && links[book.preferredLink]) {
+    return { url: links[book.preferredLink], key: book.preferredLink };
+  }
+  for (const key of LINK_ORDER) {
+    if (links[key]) return { url: links[key], key };
+  }
+  return { url: '', key: '' };
+}
+
+function primaryLink(book) {
+  return chosenLink(book).url;
 }
 
 function ctaFor(book, author) {
-  const link = primaryLink(book);
-  if (book.status === 'released') {
-    return link ? `Grab your copy: ${link}` : 'Available now everywhere books are sold.';
-  }
-  if (book.status === 'preorder') {
-    return link ? `Pre-order now: ${link}` : 'Pre-order available now!';
+  const { url, key } = chosenLink(book);
+  if (book.status === 'released' || book.status === 'preorder') {
+    const verb = key === 'signed'
+      ? 'Order a signed copy'
+      : (book.status === 'preorder' ? 'Pre-order now' : 'Grab your copy');
+    if (url) return `${verb}: ${url}`;
+    return book.status === 'preorder' ? 'Pre-order available now!' : 'Available now everywhere books are sold.';
   }
   return author?.website
     ? `Join my newsletter for the release date: ${author.website}`

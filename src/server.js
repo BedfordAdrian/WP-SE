@@ -52,6 +52,7 @@ export function createApp(store) {
 
   api.get('/meta', (req, res) => {
     res.json({
+      version: '1.2.0',
       platforms: PLATFORMS,
       postTypes: POST_TYPES,
       postStatuses: POST_STATUSES,

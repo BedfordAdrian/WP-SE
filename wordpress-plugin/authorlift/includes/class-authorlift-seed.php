@@ -45,7 +45,10 @@ class AuthorLift_Seed {
             'comps' => array('Mhairi McFarlane', "Beth O'Leary", 'Marian Keyes'),
             'quotes' => array(),
             'reviews' => array(),
-            'buyLinks' => array('universal' => 'https://books2read.com/absolutely'),
+            'buyLinks' => array(
+                'universal' => 'https://books2read.com/absolutely',
+                'signed' => 'https://shop.mofanning.co.uk/products/lisa-doyle-is-absolutely-fine-1',
+            ),
             'releaseDate' => authorlift_iso($releaseMs),
             'status' => 'released',
         ));

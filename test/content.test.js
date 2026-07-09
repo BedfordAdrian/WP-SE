@@ -77,6 +77,23 @@ test('released book CTA uses the buy link', () => {
   assert.match(c.cta, /buy\.example/);
 });
 
+test('preferred link overrides the default and signed copies get their own CTA', () => {
+  const { store, book } = storeWithBook({
+    buyLinks: { universal: 'https://b2r.example/x', signed: 'https://shop.example/signed' },
+    preferredLink: 'signed',
+  });
+  const c = generateContent(store, { bookId: book.id, postType: 'launch_day', platform: 'facebook' });
+  assert.match(c.cta, /Order a signed copy: https:\/\/shop\.example\/signed/);
+});
+
+test('with no preferred link, the broad-reach universal link wins', () => {
+  const { store, book } = storeWithBook({
+    buyLinks: { universal: 'https://b2r.example/x', signed: 'https://shop.example/signed' },
+  });
+  const c = generateContent(store, { bookId: book.id, postType: 'launch_day', platform: 'facebook' });
+  assert.match(c.cta, /Grab your copy: https:\/\/b2r\.example\/x/);
+});
+
 test('fitToPlatform trims hashtags before truncating body', () => {
   const body = 'x'.repeat(278); // leaves no room for even one "\n\n#a" (4 chars) within 280
   const { body: outBody, hashtags, text } = fitToPlatform(body, ['#a', '#b', '#c'], 'twitter');

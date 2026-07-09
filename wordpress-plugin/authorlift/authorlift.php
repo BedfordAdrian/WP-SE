@@ -3,7 +3,7 @@
  * Plugin Name:       AuthorLift
  * Plugin URI:        https://github.com/BedfordAdrian/WP-SE
  * Description:       Social media marketing for authors — generate on-brand posts, plan launch campaigns, schedule &amp; publish through a pluggable publisher, and measure the sales bump. Ships with a simulated publisher (clearly labelled); real network adapters plug in.
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Mo Fanning
@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('AUTHORLIFT_VERSION', '1.1.0');
+define('AUTHORLIFT_VERSION', '1.2.0');
 define('AUTHORLIFT_DIR', plugin_dir_path(__FILE__));
 define('AUTHORLIFT_URL', plugin_dir_url(__FILE__));
 define('AUTHORLIFT_OPTION', 'authorlift_data');

@@ -158,24 +158,40 @@ class AuthorLift_Content {
         return ($book['price'] == 0) ? 'FREE' : number_format((float) $book['price'], 2);
     }
 
-    private static function primary_link($book) {
+    const LINK_ORDER = array('universal', 'booklinker', 'amazon', 'linktree', 'apple', 'kobo', 'barnesnoble', 'audible', 'signed');
+
+    private static function chosen_link($book) {
         $links = isset($book['buyLinks']) ? $book['buyLinks'] : array();
-        foreach (array('universal', 'amazon', 'apple', 'kobo', 'barnesnoble', 'audible') as $k) {
+        if (!empty($book['preferredLink']) && !empty($links[$book['preferredLink']])) {
+            return array('url' => $links[$book['preferredLink']], 'key' => $book['preferredLink']);
+        }
+        foreach (self::LINK_ORDER as $k) {
             if (!empty($links[$k])) {
-                return $links[$k];
+                return array('url' => $links[$k], 'key' => $k);
             }
         }
-        return '';
+        return array('url' => '', 'key' => '');
+    }
+
+    private static function primary_link($book) {
+        $chosen = self::chosen_link($book);
+        return $chosen['url'];
     }
 
     private static function cta_for($book, $author) {
-        $link = self::primary_link($book);
+        $chosen = self::chosen_link($book);
+        $link = $chosen['url'];
         $status = isset($book['status']) ? $book['status'] : 'draft';
-        if ($status === 'released') {
-            return $link ? "Grab your copy: $link" : 'Available now everywhere books are sold.';
-        }
-        if ($status === 'preorder') {
-            return $link ? "Pre-order now: $link" : 'Pre-order available now!';
+        if ($status === 'released' || $status === 'preorder') {
+            if ($chosen['key'] === 'signed') {
+                $verb = 'Order a signed copy';
+            } else {
+                $verb = ($status === 'preorder') ? 'Pre-order now' : 'Grab your copy';
+            }
+            if ($link) {
+                return "$verb: $link";
+            }
+            return ($status === 'preorder') ? 'Pre-order available now!' : 'Available now everywhere books are sold.';
         }
         $website = isset($author['website']) ? $author['website'] : '';
         return $website ? "Join my newsletter for the release date: $website" : 'Follow for the release date!';

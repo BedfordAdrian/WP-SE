@@ -56,6 +56,7 @@ class AuthorLift_REST {
         // Meta / health.
         $this->route('/meta', 'GET', function () {
             return array(
+                'version' => AUTHORLIFT_VERSION,
                 'platforms' => AuthorLift_Enums::PLATFORMS,
                 'postTypes' => AuthorLift_Enums::POST_TYPES,
                 'postStatuses' => AuthorLift_Enums::POST_STATUSES,

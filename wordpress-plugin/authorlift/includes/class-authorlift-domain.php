@@ -89,6 +89,7 @@ class AuthorLift_Books {
             'releaseDate' => authorlift_parse_iso(isset($m['releaseDate']) ? $m['releaseDate'] : null),
             'status' => isset($m['status']) && $m['status'] ? authorlift_require_one_of($m['status'], AuthorLift_Enums::BOOK_STATUSES, 'status') : 'draft',
             'publisher' => authorlift_optional_string(isset($m['publisher']) ? $m['publisher'] : null, 'publisher', 200),
+            'preferredLink' => (isset($m['preferredLink']) && in_array($m['preferredLink'], self::BUY_LINK_KEYS, true)) ? $m['preferredLink'] : null,
             'coverImageUrl' => authorlift_optional_string(isset($m['coverImageUrl']) ? $m['coverImageUrl'] : null, 'coverImageUrl', 500),
         );
     }
@@ -117,13 +118,16 @@ class AuthorLift_Books {
         return $out;
     }
 
+    // `universal` = a Books2Read-style link (all stores incl. Amazon);
+    // `booklinker` = all Amazon storefronts; `signed` = the author's own webshop.
+    const BUY_LINK_KEYS = array('universal', 'booklinker', 'linktree', 'signed', 'amazon', 'apple', 'kobo', 'barnesnoble', 'audible');
+
     private static function normalize_buy_links($links) {
         if (!is_array($links)) {
             return array();
         }
-        $allowed = array('amazon', 'kobo', 'apple', 'barnesnoble', 'universal', 'audible');
         $out = array();
-        foreach ($allowed as $key) {
+        foreach (self::BUY_LINK_KEYS as $key) {
             if (isset($links[$key]) && is_string($links[$key]) && trim($links[$key]) !== '') {
                 $out[$key] = trim($links[$key]);
             }

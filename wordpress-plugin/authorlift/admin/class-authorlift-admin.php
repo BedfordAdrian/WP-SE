@@ -36,9 +36,13 @@ class AuthorLift_Admin {
         $cssVer = file_exists($cssPath) ? (string) filemtime($cssPath) : AUTHORLIFT_VERSION;
         wp_enqueue_style('authorlift', AUTHORLIFT_URL . 'admin/css/styles.css', array(), $cssVer);
         wp_enqueue_script('authorlift', AUTHORLIFT_URL . 'admin/js/app.js', array(), $jsVer, true);
+        // serverVersion is printed inline (PHP), so it is always current even if
+        // the app.js file itself is served stale from a cache — letting the
+        // dashboard detect and warn about a cached/old script.
         wp_localize_script('authorlift', 'AuthorLiftConfig', array(
             'root' => esc_url_raw(rest_url('authorlift/v1')),
             'nonce' => wp_create_nonce('wp_rest'),
+            'serverVersion' => AUTHORLIFT_VERSION,
         ));
     }
 
