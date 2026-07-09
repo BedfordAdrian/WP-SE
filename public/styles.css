@@ -189,6 +189,7 @@ tr:last-child td { border-bottom: none; }
 .plat { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; }
 .plat .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 .dot-twitter { background: #1d9bf0; }
+.dot-bluesky { background: #0085ff; }
 .dot-instagram { background: #e1306c; }
 .dot-facebook { background: #1877f2; }
 .dot-tiktok { background: #25f4ee; }

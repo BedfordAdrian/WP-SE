@@ -166,6 +166,7 @@
 #authorlift-app .plat { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; }
 #authorlift-app .plat .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 #authorlift-app .dot-twitter { background: #1d9bf0; }
+#authorlift-app .dot-bluesky { background: #0085ff; }
 #authorlift-app .dot-instagram { background: #e1306c; }
 #authorlift-app .dot-facebook { background: #1877f2; }
 #authorlift-app .dot-tiktok { background: #25f4ee; }

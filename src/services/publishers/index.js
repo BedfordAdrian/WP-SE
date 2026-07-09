@@ -1,4 +1,5 @@
 import { simulatedPublisher } from './simulated.js';
+import { manualPublisher } from './manual.js';
 
 /**
  * Publisher registry. A publisher is any object of the shape:
@@ -40,5 +41,6 @@ export function getActivePublisher(store) {
 
 // Built-in publisher(s).
 registerPublisher(simulatedPublisher);
+registerPublisher(manualPublisher);
 
-export { simulatedPublisher };
+export { simulatedPublisher, manualPublisher };

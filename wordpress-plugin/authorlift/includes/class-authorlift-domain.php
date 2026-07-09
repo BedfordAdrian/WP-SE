@@ -5,7 +5,7 @@ if (!defined('ABSPATH')) {
 
 /** Reference enums shared across the domain. */
 class AuthorLift_Enums {
-    const PLATFORMS = array('twitter', 'instagram', 'facebook', 'tiktok', 'threads', 'newsletter');
+    const PLATFORMS = array('twitter', 'bluesky', 'instagram', 'facebook', 'tiktok', 'threads', 'newsletter');
     const BOOK_STATUSES = array('draft', 'preorder', 'released');
     const GENRES = array(
         'Romance', 'Romantic Comedy', 'Romantasy', 'Fantasy', 'Science Fiction', 'Thriller',

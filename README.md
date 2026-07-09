@@ -19,7 +19,7 @@ installs and runs with **zero native build steps** and **no API keys required**.
 |---|---|
 | **Content Studio** — generate ready-to-post copy for 15 post types (teasers, quote cards, cover reveals, countdowns, launch-day, review highlights, giveaways, newsletter CTAs…), fitted to each platform's character budget, with hashtag suggestions drawn from genre + tropes. | `src/services/contentStudio.js` |
 | **Campaign Planner** — turn a book + release date into a full, dated posting "playbook": a six-week pre-launch ramp, a launch-day blitz across all channels, and two weeks of sustain. One click fills the calendar. | `src/services/campaignPlanner.js` |
-| **Scheduler & Publishers** — a background engine publishes posts when their time arrives, through a pluggable publisher adapter. | `src/services/scheduler.js`, `src/services/publishers/` |
+| **Scheduler & Publishers** — a background engine publishes posts when their time arrives, through a pluggable publisher adapter (across Twitter/X, Bluesky, Instagram, Facebook, TikTok, Threads and newsletter). Ships with **Simulated** and **Manual** publishers; real network adapters plug into the same interface. | `src/services/scheduler.js`, `src/services/publishers/` |
 | **Analytics & Sales Bump** — track engagement, follower/subscriber growth, and the headline number: the **percentage uplift in sales** during a campaign vs. the prior matched period. | `src/services/metrics.js` |
 
 ---

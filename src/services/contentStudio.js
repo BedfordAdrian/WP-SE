@@ -13,6 +13,7 @@ import { POST_TYPES } from '../domain/posts.js';
 
 export const PLATFORM_LIMITS = {
   twitter: 280,
+  bluesky: 300,
   threads: 500,
   instagram: 2200,
   facebook: 5000,

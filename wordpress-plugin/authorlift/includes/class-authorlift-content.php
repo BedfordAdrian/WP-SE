@@ -11,6 +11,7 @@ class AuthorLift_Recommendations {
 
     const BEST_TIMES = array(
         'twitter' => array(9, 12, 17, 20),
+        'bluesky' => array(8, 12, 17, 21),
         'instagram' => array(11, 14, 19, 21),
         'facebook' => array(9, 13, 19),
         'tiktok' => array(7, 12, 19, 22),
@@ -19,11 +20,11 @@ class AuthorLift_Recommendations {
     );
 
     const HASHTAG_LIMITS = array(
-        'twitter' => 3, 'instagram' => 12, 'facebook' => 3, 'tiktok' => 5, 'threads' => 5, 'newsletter' => 0,
+        'twitter' => 3, 'bluesky' => 4, 'instagram' => 12, 'facebook' => 3, 'tiktok' => 5, 'threads' => 5, 'newsletter' => 0,
     );
 
     const CADENCE_PER_WEEK = array(
-        'twitter' => 5, 'instagram' => 4, 'facebook' => 3, 'tiktok' => 3, 'threads' => 4, 'newsletter' => 1,
+        'twitter' => 5, 'bluesky' => 5, 'instagram' => 4, 'facebook' => 3, 'tiktok' => 3, 'threads' => 4, 'newsletter' => 1,
     );
 
     private static function genre_hashtags() {
@@ -48,6 +49,7 @@ class AuthorLift_Recommendations {
     private static function community_hashtags() {
         return array(
             'twitter' => array('#BookTwitter', '#WritingCommunity', '#IndieAuthor', '#amreading'),
+            'bluesky' => array('#BookSky', '#WritingCommunity', '#IndieAuthor', '#amreading'),
             'instagram' => array('#Bookstagram', '#BookstagramCommunity', '#IndieAuthor', '#amreading', '#booklover', '#currentlyreading'),
             'facebook' => array('#IndieAuthor', '#amreading'),
             'tiktok' => array('#BookTok', '#BookTokMadeMeReadIt', '#IndieAuthor'),
@@ -121,7 +123,7 @@ class AuthorLift_Recommendations {
 class AuthorLift_Content {
 
     const PLATFORM_LIMITS = array(
-        'twitter' => 280, 'threads' => 500, 'instagram' => 2200, 'facebook' => 5000, 'tiktok' => 2200, 'newsletter' => 100000,
+        'twitter' => 280, 'bluesky' => 300, 'threads' => 500, 'instagram' => 2200, 'facebook' => 5000, 'tiktok' => 2200, 'newsletter' => 100000,
     );
 
     private static function emoji_for($type) {

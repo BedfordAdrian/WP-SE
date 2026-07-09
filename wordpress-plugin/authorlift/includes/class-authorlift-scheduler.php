@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
 class AuthorLift_Publishers {
 
     const IMPRESSION_FACTOR = array(
-        'twitter' => 1.2, 'instagram' => 1.6, 'facebook' => 0.7, 'tiktok' => 3.5, 'threads' => 1.1, 'newsletter' => 0.45,
+        'twitter' => 1.2, 'bluesky' => 1.0, 'instagram' => 1.6, 'facebook' => 0.7, 'tiktok' => 3.5, 'threads' => 1.1, 'newsletter' => 0.45,
     );
 
     const TYPE_REACH = array(
@@ -71,6 +71,20 @@ class AuthorLift_Publishers {
                     );
                 },
             ),
+            // Manual: marks a post published WITHOUT fabricating engagement — for
+            // when you post to your networks yourself. Metrics stay as-is (0).
+            'manual' => array(
+                'name' => 'manual',
+                'simulated' => false,
+                'publish' => function ($post, $context) {
+                    $nowMs = isset($context['now']) ? authorlift_ms($context['now']) : authorlift_ms();
+                    return array(
+                        'externalId' => 'manual_' . dechex(authorlift_hash_string($post['id'])),
+                        'publishedAt' => authorlift_iso($nowMs),
+                        'metrics' => isset($post['metrics']) ? $post['metrics'] : AuthorLift_Posts::empty_metrics(),
+                    );
+                },
+            ),
         );
         // Allow real network adapters to register.
         $registry = apply_filters('authorlift_publishers', $registry);
@@ -104,7 +118,7 @@ class AuthorLift_Publishers {
 class AuthorLift_Scheduler {
 
     const DEFAULT_REACH = array(
-        'twitter' => 2500, 'instagram' => 3500, 'facebook' => 1500, 'tiktok' => 6000, 'threads' => 1800, 'newsletter' => 1200,
+        'twitter' => 2500, 'bluesky' => 1500, 'instagram' => 3500, 'facebook' => 1500, 'tiktok' => 6000, 'threads' => 1800, 'newsletter' => 1200,
     );
 
     private static function reach_for($store, $platform) {

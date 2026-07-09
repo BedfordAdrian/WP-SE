@@ -41,6 +41,17 @@ test('publishing is idempotent for already-published posts', async () => {
   assert.equal(updated.metrics.impressions, 5, 'metrics not regenerated');
 });
 
+test('the manual publisher publishes without fabricating metrics', async () => {
+  const store = freshStore();
+  store.updateSettings({ activePublisher: 'manual' });
+  const p = createPost(store, { platform: 'bluesky', type: 'launch_day', body: 'live!', status: 'scheduled', scheduledAt: '2026-01-01T00:00:00.000Z' });
+  const updated = await publishPost(store, p.id, { now: new Date('2026-01-02T00:00:00.000Z') });
+  assert.equal(updated.status, 'published');
+  assert.equal(updated.publishedVia, 'manual');
+  assert.equal(updated.metrics.impressions, 0, 'no fabricated engagement');
+  assert.match(updated.externalId, /^manual_/);
+});
+
 test('a failing publisher marks the post failed without throwing', async () => {
   const store = freshStore();
   registerPublisher({

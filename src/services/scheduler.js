@@ -8,7 +8,7 @@ import { listFollowerSnapshots, listSubscriberSnapshots } from '../domain/audien
  * `publishPost` so it can be driven directly from tests.
  */
 
-const DEFAULT_REACH = { twitter: 2500, instagram: 3500, facebook: 1500, tiktok: 6000, threads: 1800, newsletter: 1200 };
+const DEFAULT_REACH = { twitter: 2500, bluesky: 1500, instagram: 3500, facebook: 1500, tiktok: 6000, threads: 1800, newsletter: 1200 };
 
 function reachFor(store, platform) {
   if (platform === 'newsletter') {

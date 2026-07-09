@@ -6,7 +6,7 @@ import {
 } from '../utils/validate.js';
 import { TZ_OFFSETS } from '../utils/time.js';
 
-export const PLATFORMS = ['twitter', 'instagram', 'facebook', 'tiktok', 'threads', 'newsletter'];
+export const PLATFORMS = ['twitter', 'bluesky', 'instagram', 'facebook', 'tiktok', 'threads', 'newsletter'];
 
 /**
  * Validate and normalise an author profile. The app is single-author, so this

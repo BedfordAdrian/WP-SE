@@ -9,6 +9,7 @@
 // Recommended LOCAL posting hours (24h) per platform, roughly ordered best-first.
 export const BEST_TIMES = {
   twitter: [9, 12, 17, 20],
+  bluesky: [8, 12, 17, 21],
   instagram: [11, 14, 19, 21],
   facebook: [9, 13, 19],
   tiktok: [7, 12, 19, 22],
@@ -19,6 +20,7 @@ export const BEST_TIMES = {
 // How many hashtags to attach per platform (0 = none / body only).
 export const HASHTAG_LIMITS = {
   twitter: 3,
+  bluesky: 4,
   instagram: 12,
   facebook: 3,
   tiktok: 5,
@@ -30,6 +32,7 @@ export const HASHTAG_LIMITS = {
 // steady phase of a campaign.
 export const CADENCE_PER_WEEK = {
   twitter: 5,
+  bluesky: 5,
   instagram: 4,
   facebook: 3,
   tiktok: 3,
@@ -56,6 +59,7 @@ const GENRE_HASHTAGS = {
 
 const COMMUNITY_HASHTAGS = {
   twitter: ['#BookTwitter', '#WritingCommunity', '#IndieAuthor', '#amreading'],
+  bluesky: ['#BookSky', '#WritingCommunity', '#IndieAuthor', '#amreading'],
   instagram: ['#Bookstagram', '#BookstagramCommunity', '#IndieAuthor', '#amreading', '#booklover', '#currentlyreading'],
   facebook: ['#IndieAuthor', '#amreading'],
   tiktok: ['#BookTok', '#BookTokMadeMeReadIt', '#IndieAuthor'],

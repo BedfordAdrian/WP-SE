@@ -71,8 +71,8 @@ function fmtTime(d) {
 function titleCase(s) {
   return String(s || '').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
-const PLATFORM_ICON = { twitter: 'Twitter/X', instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok', threads: 'Threads', newsletter: 'Newsletter' };
-const PLATFORM_COLOR = { twitter: '#1d9bf0', instagram: '#e1306c', facebook: '#1877f2', tiktok: '#25f4ee', threads: '#b478f6', newsletter: '#f59e0b' };
+const PLATFORM_ICON = { twitter: 'Twitter/X', bluesky: 'Bluesky', instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok', threads: 'Threads', newsletter: 'Newsletter' };
+const PLATFORM_COLOR = { twitter: '#1d9bf0', bluesky: '#0085ff', instagram: '#e1306c', facebook: '#1877f2', tiktok: '#25f4ee', threads: '#b478f6', newsletter: '#f59e0b' };
 
 function platformTag(p) {
   return `<span class="plat"><span class="dot dot-${esc(p)}"></span>${esc(PLATFORM_ICON[p] || p)}</span>`;
@@ -781,6 +781,16 @@ views.settings = async () => {
   const [settings, publishers] = await Promise.all([api.get('/settings'), api.get('/publishers')]);
   const a = state.author || {};
   const m = state.meta;
+  const handles = a.handles || {};
+  // A field for every social platform (newsletter has no handle).
+  const socialPlatforms = m.platforms.filter((p) => p !== 'newsletter');
+  const handleRows = [];
+  for (let i = 0; i < socialPlatforms.length; i += 2) {
+    const pair = socialPlatforms.slice(i, i + 2);
+    handleRows.push(`<div class="form-row">${pair.map((p) =>
+      `<div class="field"><label>${esc(PLATFORM_ICON[p] || p)}</label><input id="h-${esc(p)}" value="${esc(handles[p] || '')}" placeholder="yourhandle"></div>`).join('')}</div>`);
+  }
+
   main.innerHTML = pageHead('Settings', 'Your author profile and publishing configuration.')
     + `<div class="grid two">
       <div class="card"><h3>Author profile</h3>
@@ -792,32 +802,35 @@ views.settings = async () => {
           <div class="field"><label>Timezone</label><select id="a-tz">${m.timezones.map((t) => `<option ${a.timezone === t ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></div>
         </div>
         <div class="section-title">Handles</div>
-        <div class="form-row">
-          <div class="field"><label>Twitter/X</label><input id="h-twitter" value="${esc(a.handles?.twitter || '')}"></div>
-          <div class="field"><label>Instagram</label><input id="h-instagram" value="${esc(a.handles?.instagram || '')}"></div>
-        </div>
-        <div class="form-row">
-          <div class="field"><label>TikTok</label><input id="h-tiktok" value="${esc(a.handles?.tiktok || '')}"></div>
-          <div class="field"><label>Threads</label><input id="h-threads" value="${esc(a.handles?.threads || '')}"></div>
-        </div>
+        <div class="help" style="margin-bottom:10px">Set a handle for each network you post on — the campaign planner schedules to exactly the channels you fill in here (leave the rest blank).</div>
+        ${handleRows.join('')}
         <button class="btn primary" id="a-save">Save profile</button>
       </div>
       <div class="card"><h3>Publishing</h3>
         <div class="field"><label>Active publisher</label>
-          <select id="set-pub">${publishers.map((p) => `<option value="${p.name}" ${settings.activePublisher === p.name ? 'selected' : ''}>${esc(titleCase(p.name))}${p.simulated ? ' (simulated)' : ''}</option>`).join('')}</select>
-          <div class="help">The <strong>simulated</strong> publisher generates realistic engagement without contacting live networks — perfect for demos and dry runs. Real adapters (X, Meta, TikTok, your ESP) register through the same interface and appear here once configured with credentials.</div>
+          <select id="set-pub">${publishers.map((p) => `<option value="${esc(p.name)}" ${settings.activePublisher === p.name ? 'selected' : ''}>${esc(titleCase(p.name))}${p.simulated ? ' — simulated' : ''}</option>`).join('')}</select>
         </div>
-        <button class="btn" id="set-save">Save</button>
-        <div class="section-title">How scheduling works</div>
-        <p class="help">Posts you schedule are picked up by a background scheduler and handed to the active publisher when their time arrives. On the demo publisher this fabricates deterministic metrics so your analytics stay lively.</p>
+        <button class="btn" id="set-save">Save publisher</button>
+        <div class="help" style="margin-top:12px">
+          <strong>Simulated</strong> — generates realistic engagement locally; nothing is posted to a live network (good for demos/dry runs).<br>
+          <strong>Manual</strong> — marks posts as published without inventing any numbers; use this when you post to your networks yourself. Metrics stay at zero until you record real ones.<br>
+          Automated network adapters (X, Meta, TikTok, Bluesky, your ESP) register through the same interface${AL_CONFIG.nonce ? ' via the <span class="mono">authorlift_publishers</span> filter' : ''} and appear here once configured with credentials.
+        </div>
+      </div>
+      <div class="card"><h3>Data</h3>
+        ${isSampleData() ? '<div class="disclosure" style="margin-bottom:14px">This install currently contains demo/sample data.</div>' : ''}
+        <p class="help" style="margin-bottom:12px">Start fresh clears the seeded books, campaigns, posts and sample metrics, keeps your author profile, and turns off demo mode — ready for your own catalogue.</p>
+        <button class="btn danger" id="data-reset">Clear sample data &amp; start fresh</button>
       </div>
     </div>`;
+
   $('#a-save').addEventListener('click', async () => {
     try {
+      const newHandles = {};
+      for (const p of socialPlatforms) newHandles[p] = $(`#h-${p}`).value;
       const author = await api.put('/author', {
         penName: $('#a-pen').value, tagline: $('#a-tag').value, bio: $('#a-bio').value,
-        website: $('#a-web').value, timezone: $('#a-tz').value,
-        handles: { twitter: $('#h-twitter').value, instagram: $('#h-instagram').value, tiktok: $('#h-tiktok').value, threads: $('#h-threads').value },
+        website: $('#a-web').value, timezone: $('#a-tz').value, handles: newHandles,
       });
       state.author = author;
       $('#foot-author').innerHTML = `Signed in as<br><strong>${esc(author.penName)}</strong>`;
@@ -825,8 +838,19 @@ views.settings = async () => {
     } catch (err) { toast(err.message, 'bad'); }
   });
   $('#set-save').addEventListener('click', async () => {
-    try { await api.put('/settings', { activePublisher: $('#set-pub').value }); toast('Settings saved.'); }
-    catch (err) { toast(err.message, 'bad'); }
+    try {
+      state.settings = await api.put('/settings', { activePublisher: $('#set-pub').value });
+      toast('Publisher saved.');
+    } catch (err) { toast(err.message, 'bad'); }
+  });
+  $('#data-reset').addEventListener('click', async () => {
+    if (!confirm('Clear all sample data and start fresh? This removes the seeded books, campaigns, posts and sample metrics. Your author profile is kept. This cannot be undone.')) return;
+    try {
+      const res = await api.post('/data/reset', {});
+      state.settings = res.settings;
+      toast('Sample data cleared. Add your own books to begin.');
+      location.hash = '#/books';
+    } catch (err) { toast(err.message, 'bad'); }
   });
 };
 

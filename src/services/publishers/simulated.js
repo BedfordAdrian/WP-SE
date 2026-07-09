@@ -14,6 +14,7 @@ import { seededRandom, hashString } from '../../utils/id.js';
 
 const IMPRESSION_FACTOR = {
   twitter: 1.2,
+  bluesky: 1.0,
   instagram: 1.6,
   facebook: 0.7,
   tiktok: 3.5,

@@ -238,5 +238,21 @@ class AuthorLift_REST {
         $this->route('/publishers', 'GET', function () {
             return AuthorLift_Publishers::listing();
         });
+
+        // Clear sample/demo data and exit demo mode, keeping the author profile.
+        $this->route('/data/reset', 'POST', function () use ($store) {
+            $author = $store->get_author();
+            $settings = $store->get_settings();
+            $store->reset();
+            if ($author) {
+                $store->set_author($author);
+            }
+            $store->update_settings(array(
+                'demoData' => false,
+                'currencySymbol' => isset($settings['currencySymbol']) ? $settings['currencySymbol'] : '$',
+                'activePublisher' => isset($settings['activePublisher']) ? $settings['activePublisher'] : 'simulated',
+            ));
+            return array('ok' => true, 'settings' => $store->get_settings());
+        });
     }
 }

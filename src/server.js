@@ -196,6 +196,21 @@ export function createApp(store) {
   }));
   api.get('/publishers', (req, res) => res.json(listPublishers()));
 
+  // Clear sample/demo data and exit demo mode, keeping the author profile,
+  // currency and active publisher. Used by the "Start fresh" action.
+  api.post('/data/reset', wrap(async (req, res) => {
+    const author = store.getAuthor();
+    const settings = store.getSettings();
+    store.reset();
+    if (author) store.setAuthor(author);
+    store.updateSettings({
+      demoData: false,
+      currencySymbol: settings.currencySymbol || '$',
+      activePublisher: settings.activePublisher || 'simulated',
+    });
+    res.json({ ok: true, settings: store.getSettings() });
+  }));
+
   app.use('/api', api);
 
   // Static dashboard.

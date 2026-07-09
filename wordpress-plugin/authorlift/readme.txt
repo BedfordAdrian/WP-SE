@@ -29,17 +29,28 @@ inside your WordPress admin:
 
 = Please read: about publishing =
 
-AuthorLift ships with a **simulated** publisher as the default. It does **not**
-post to live social networks, and the engagement numbers it produces (plus the
-sample sales in the demo seed) are **realistic simulations, not real data** —
-clearly labelled as "Sample data" throughout the dashboard. This lets you use
-the whole product without connecting any accounts.
+AuthorLift supports Twitter/X, Bluesky, Instagram, Facebook, TikTok, Threads and
+a newsletter channel. Set a handle for each network you use under Settings →
+Handles; the planner schedules to exactly those channels.
 
-Real network adapters (X, Meta, TikTok, an email service provider, …) implement
-the same interface and register via the `authorlift_publishers` filter; once
-active, the scheduler uses them with no other changes and analytics reflect real
-measured metrics. Record your own sales under Analytics → Log sales so the
-sales-bump report reflects your real numbers.
+Two publishers are built in, chosen under Settings → Publishing:
+
+* **Simulated** (default) — does **not** post to live networks; it generates
+  realistic engagement locally so you can try everything without connecting
+  accounts. Its numbers (and the demo seed's sample sales) are clearly labelled
+  "Sample data" throughout the dashboard.
+* **Manual** — marks posts as published without inventing any numbers, for when
+  you post to your networks yourself. Engagement stays at zero until you record
+  real figures.
+
+Automated network adapters (X, Meta, TikTok, Bluesky, an email service provider,
+…) implement the same interface and register via the `authorlift_publishers`
+filter; once active, the scheduler uses them with no other changes and analytics
+reflect real measured metrics.
+
+Use **Settings → Data → Clear sample data & start fresh** to remove the demo
+seed and use the tool with your own catalogue, and **Analytics → Log sales** to
+record real sales so the sales-bump report reflects your true numbers.
 
 == Installation ==
 
