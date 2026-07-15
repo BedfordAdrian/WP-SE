@@ -4,7 +4,7 @@ Tags: marketing, books, authors, openai, analytics, campaigns
 Requires at least: 6.5
 Tested up to: 7.0.1
 Requires PHP: 8.1
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -73,10 +73,20 @@ time.
 
 == Changelog ==
 
+= 1.0.1 =
+* Fix: saving the OpenAI API key failed on hosts using WordPress's bundled
+  sodium_compat polyfill (without the native libsodium extension) because
+  sodium_memzero() throws there. Encryption now prefers the native libsodium
+  extension, then OpenSSL AES-256-GCM, then the polyfill, and the memory wipe
+  can never abort encryption.
+
 = 1.0.0 =
 * Initial phase-one release.
 
 == Upgrade Notice ==
+
+= 1.0.1 =
+Fixes API-key saving on hosts without the native libsodium extension.
 
 = 1.0.0 =
 Initial release.

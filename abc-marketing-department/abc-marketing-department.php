@@ -3,7 +3,7 @@
  * Plugin Name:       Marketing Department
  * Plugin URI:        https://github.com/BedfordAdrian/WP-SE
  * Description:       Admin-only marketing operating system for a small book-marketing agency. Manages authors and per-book client workspaces, collects sales &amp; campaign data via manual CSV imports, runs OpenAI-assisted audits, produces ranked weekly recommendations, tasks, content drafts and an approval queue, detects anomalies, and keeps a full audit trail. Phase one; later platform integrations plug into the same architecture.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 6.5
  * Tested up to:      7.0.1
  * Requires PHP:      8.1
@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // ---------------------------------------------------------------------------
 // Core constants.
 // ---------------------------------------------------------------------------
-define( 'ABCMD_VERSION', '1.0.0' );
+define( 'ABCMD_VERSION', '1.0.1' );
 define( 'ABCMD_DB_VERSION', '1.0.0' );
 define( 'ABCMD_PLUGIN_FILE', __FILE__ );
 define( 'ABCMD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );

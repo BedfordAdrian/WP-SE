@@ -3,6 +3,17 @@
 All notable changes to Marketing Department are documented here. This project
 adheres to semantic versioning.
 
+## [1.0.1] — 2026-07-15
+
+### Fixed
+- **API-key encryption on hosts without the native libsodium extension.** When a
+  site relied on WordPress's bundled `sodium_compat` polyfill, saving the OpenAI
+  key failed with "This is not implemented in sodium_compat…" because
+  `sodium_memzero()` throws under the polyfill. Encryption now prefers the native
+  libsodium extension, then OpenSSL AES-256-GCM, then the polyfill, and the
+  best-effort memory wipe is guarded so it can never abort encryption or
+  decryption. Existing `sv1`/`ov1` ciphertexts remain readable.
+
 ## [1.0.0] — 2026-07-15
 
 Initial phase-one release.

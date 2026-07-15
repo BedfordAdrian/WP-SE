@@ -1,4 +1,4 @@
-# Test Report — Marketing Department 1.0.0
+# Test Report — Marketing Department 1.0.1
 
 Generated for the phase-one release.
 
@@ -19,13 +19,13 @@ Covers pure logic with WordPress functions stubbed.
 
 | Area | Checks |
 |---|---|
-| Encryption round-trip, tamper detection, masking | 7 |
+| Encryption round-trip, tamper detection, masking, OpenSSL + guarded-sodium backends | 11 |
 | AI cost calculation (input/output/web-search, unknown model) | 6 |
 | CSV number parsing (currency, EU format, negatives, thousands) | 8 |
 | CSV date parsing (explicit + auto-detect, invalid) | 6 |
 | AI JSON extraction, threshold merge, data-sharing shape, mapping, helpers | 16 |
 
-**Result: 43 passed, 0 failed.**
+**Result: 47 passed, 0 failed.**
 
 ### 2. Functional tests (in-memory fake `$wpdb`) — `php tests/run-functional.php`
 
@@ -67,7 +67,7 @@ fatal or exception.
 
 **Result: 34 passed, 0 failed.**
 
-### Combined: **113 checks, 0 failures.**
+### Combined: **117 checks, 0 failures.**
 
 ### 5. WordPress-integration suite — `phpunit` (requires WP test library)
 

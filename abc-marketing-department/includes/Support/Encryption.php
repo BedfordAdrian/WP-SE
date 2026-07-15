@@ -41,24 +41,32 @@ final class Encryption {
 	/**
 	 * Encrypt a plaintext secret. Returns an opaque, storable string.
 	 *
-	 * @param string $plaintext Secret value.
+	 * Backend preference: native libsodium extension, then OpenSSL AES-256-GCM,
+	 * then the libsodium polyfill (sodium_compat) as a last resort. This avoids
+	 * the polyfill on hosts that have OpenSSL, and never lets a best-effort memory
+	 * wipe (which sodium_compat refuses to perform) abort encryption.
+	 *
+	 * @param string      $plaintext Secret value.
+	 * @param string|null $force     Test-only backend override: 'sodium'|'openssl'.
 	 * @return string Base64 ciphertext prefixed with a version tag.
 	 * @throws \RuntimeException When no backend is available.
 	 */
-	public static function encrypt( string $plaintext ): string {
+	public static function encrypt( string $plaintext, ?string $force = null ): string {
 		if ( '' === $plaintext ) {
 			return '';
 		}
 
-		if ( self::has_sodium() ) {
-			$key   = self::derive_key( SODIUM_CRYPTO_SECRETBOX_KEYBYTES );
-			$nonce = random_bytes( SODIUM_CRYPTO_SECRETBOX_NONCEBYTES );
+		$backend = $force ?: self::preferred_backend();
+
+		if ( 'sodium' === $backend && self::has_sodium() ) {
+			$key    = self::derive_key( SODIUM_CRYPTO_SECRETBOX_KEYBYTES );
+			$nonce  = random_bytes( SODIUM_CRYPTO_SECRETBOX_NONCEBYTES );
 			$cipher = sodium_crypto_secretbox( $plaintext, $nonce, $key );
-			sodium_memzero( $key );
+			self::wipe( $key );
 			return self::V_SODIUM . ':' . base64_encode( $nonce . $cipher );
 		}
 
-		if ( self::has_openssl() ) {
+		if ( 'openssl' === $backend && self::has_openssl() ) {
 			$key    = self::derive_key( 32 );
 			$iv     = random_bytes( 12 );
 			$tag    = '';
@@ -102,7 +110,7 @@ final class Encryption {
 				$cipher = substr( $raw, $nonce_len );
 				$key    = self::derive_key( SODIUM_CRYPTO_SECRETBOX_KEYBYTES );
 				$plain  = sodium_crypto_secretbox_open( $cipher, $nonce, $key );
-				sodium_memzero( $key );
+				self::wipe( $key );
 				return false === $plain ? null : $plain;
 			}
 
@@ -164,13 +172,63 @@ final class Encryption {
 		return substr( $hash, 0, $length );
 	}
 
+	/**
+	 * Choose the encryption backend, preferring native libsodium, then OpenSSL,
+	 * then the libsodium polyfill (sodium_compat).
+	 *
+	 * @return string 'sodium'|'openssl'|'' (none).
+	 */
+	private static function preferred_backend(): string {
+		if ( self::has_native_sodium() ) {
+			return 'sodium';
+		}
+		if ( self::has_openssl() ) {
+			return 'openssl';
+		}
+		if ( self::has_sodium() ) {
+			// Polyfill only: secretbox works; the memory wipe is guarded below.
+			return 'sodium';
+		}
+		return '';
+	}
+
+	/**
+	 * Whether the sodium API is available at all (native extension OR polyfill).
+	 */
 	private static function has_sodium(): bool {
 		return function_exists( 'sodium_crypto_secretbox' )
 			&& defined( 'SODIUM_CRYPTO_SECRETBOX_KEYBYTES' );
 	}
 
+	/**
+	 * Whether the NATIVE libsodium extension is loaded (not the pure-PHP
+	 * sodium_compat polyfill). Only the native extension can wipe memory.
+	 */
+	private static function has_native_sodium(): bool {
+		return extension_loaded( 'sodium' ) && self::has_sodium();
+	}
+
 	private static function has_openssl(): bool {
 		return function_exists( 'openssl_encrypt' )
 			&& in_array( 'aes-256-gcm', array_map( 'strtolower', openssl_get_cipher_methods() ), true );
+	}
+
+	/**
+	 * Best-effort wipe of a key from memory. sodium_memzero() throws under the
+	 * sodium_compat polyfill (it cannot securely wipe PHP memory), so the call is
+	 * guarded and never allowed to abort encryption/decryption.
+	 *
+	 * @param string $secret Reference to the key material to clear.
+	 */
+	private static function wipe( string &$secret ): void {
+		try {
+			if ( self::has_native_sodium() && function_exists( 'sodium_memzero' ) ) {
+				sodium_memzero( $secret );
+				return;
+			}
+		} catch ( \Throwable $e ) {
+			// Fall through to a plain overwrite.
+		}
+		$secret = str_repeat( "\0", strlen( $secret ) );
 	}
 }
