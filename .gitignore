@@ -8,3 +8,6 @@ coverage/
 
 # Built plugin artifact (regenerate with wordpress-plugin/build.sh)
 wordpress-plugin/authorlift.zip
+
+# Marketing Department build output (regenerate with ./build-plugin.sh)
+dist/

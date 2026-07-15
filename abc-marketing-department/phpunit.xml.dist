@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!--
+  PHPUnit configuration.
+
+  - The "standalone" and "functional" suites run with NO WordPress install:
+      php tests/run-tests.php
+      php tests/run-functional.php
+      php tests/smoke-render.php
+  - The "integration" suite below requires the WordPress test library and a test
+    database (see docs/STAGING-CHECKLIST.md). Run with: phpunit
+-->
+<phpunit
+	bootstrap="tests/bootstrap-wp.php"
+	backupGlobals="false"
+	colors="true"
+	convertErrorsToExceptions="true"
+	convertNoticesToExceptions="true"
+	convertWarningsToExceptions="true"
+>
+	<testsuites>
+		<testsuite name="integration">
+			<directory suffix=".php">tests/integration</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>
