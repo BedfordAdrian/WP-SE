@@ -174,7 +174,10 @@ final class Metrics extends BaseRepository {
 		);
 		$out = array();
 		foreach ( array_reverse( (array) $rows ) as $r ) {
-			$out[ (string) $r['yw'] ] = (float) $r['total'];
+			if ( ! isset( $r['yw'] ) ) {
+				continue;
+			}
+			$out[ (string) $r['yw'] ] = (float) ( $r['total'] ?? 0 );
 		}
 		return $out;
 	}
