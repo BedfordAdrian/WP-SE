@@ -15,10 +15,30 @@
 require __DIR__ . '/bootstrap-wp-fake.php';
 
 // --- HTTP layer stubs (capture request, return canned response) -------------
-$GLOBALS['__captured'] = null;
+$GLOBALS['__captured']     = null;
+$GLOBALS['__reject_temp']  = false;
 
 function wp_remote_post( $url, $args = array() ) {
 	$GLOBALS['__captured'] = array( 'url' => $url, 'args' => $args );
+
+	// Simulate a model that rejects the temperature parameter.
+	if ( ! empty( $GLOBALS['__reject_temp'] ) ) {
+		$sent = json_decode( $args['body'] ?? '{}', true );
+		if ( is_array( $sent ) && array_key_exists( 'temperature', $sent ) ) {
+			return array(
+				'response' => array( 'code' => 400 ),
+				'body'     => wp_json_encode( array(
+					'error' => array(
+						'message' => "Unsupported parameter: 'temperature' is not supported with this model.",
+						'type'    => 'invalid_request_error',
+						'param'   => 'temperature',
+						'code'    => 'unsupported_parameter',
+					),
+				) ),
+			);
+		}
+	}
+
 	$body = array(
 		'id'     => 'resp_test',
 		'model'  => 'gpt-5.4',
@@ -106,6 +126,27 @@ ok( $result['input_tokens'] === 1200 && $result['output_tokens'] === 800, 'Parse
 ok( $result['web_calls'] === 1, 'Counts web_search_call items' );
 ok( count( $result['sources'] ) === 2, 'De-duplicates url_citation sources (3 → 2)' );
 ok( $result['sources'][0]['url'] === 'https://example.com/a', 'First source URL parsed' );
+
+// --- Adaptive parameter stripping ------------------------------------------
+echo "\n\033[1mAdaptive parameter stripping\033[0m\n";
+delete_option( 'abcmd_model_quirks' );
+$GLOBALS['__reject_temp'] = true;
+$GLOBALS['__captured']    = null;
+
+$adapt = OpenAIClient::respond( 'gpt-5-reasoning', 'You are a strategist.', 'Audit this.', array() );
+$final_body = json_decode( $GLOBALS['__captured']['args']['body'] ?? '{}', true );
+
+ok( $adapt['ok'] === true, 'Run succeeds after stripping the rejected temperature parameter' );
+ok( ! array_key_exists( 'temperature', $final_body ), 'Retried request omits temperature' );
+$quirks = get_option( 'abcmd_model_quirks', array() );
+ok( isset( $quirks['gpt-5-reasoning'] ) && in_array( 'temperature', $quirks['gpt-5-reasoning'], true ), 'Model quirk remembered for next time' );
+
+// Next call for the same model must omit temperature upfront (no 400 needed).
+$GLOBALS['__captured'] = null;
+$again = OpenAIClient::respond( 'gpt-5-reasoning', 'You are a strategist.', 'Audit again.', array() );
+$again_body = json_decode( $GLOBALS['__captured']['args']['body'] ?? '{}', true );
+ok( ! array_key_exists( 'temperature', $again_body ), 'Subsequent run omits temperature upfront (learned quirk)' );
+$GLOBALS['__reject_temp'] = false;
 
 echo "\n----------------------------------------\n";
 echo sprintf( "Passed: %d  Failed: %d\n", $pass, $fail );

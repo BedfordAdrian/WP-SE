@@ -44,6 +44,7 @@ foreach ( $keys as $key ) {
 $options = array(
 	'abcmd_settings', 'abcmd_openai', 'abcmd_model_prices', 'abcmd_db_version',
 	'abcmd_privacy_template', 'abcmd_last_audit', 'abcmd_activated_at',
+	'abcmd_model_quirks',
 );
 foreach ( $options as $opt ) {
 	delete_option( $opt );

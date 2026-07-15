@@ -3,6 +3,17 @@
 All notable changes to Marketing Department are documented here. This project
 adheres to semantic versioning.
 
+## [1.0.2] — 2026-07-15
+
+### Fixed
+- **AI runs on models that reject `temperature`.** Reasoning-family models return
+  "Unsupported parameter: 'temperature' is not supported with this model." The
+  Responses client now detects an unsupported-parameter rejection, drops that
+  parameter (temperature / top_p / penalties), and retries — then records the
+  model's quirk in `abcmd_model_quirks` so subsequent runs omit it upfront without
+  a wasted request. Added regression tests for the strip-and-retry and learned-
+  quirk paths.
+
 ## [1.0.1] — 2026-07-15
 
 ### Fixed

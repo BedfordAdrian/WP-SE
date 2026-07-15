@@ -1,4 +1,4 @@
-# Test Report — Marketing Department 1.0.1
+# Test Report — Marketing Department 1.0.2
 
 Generated for the phase-one release.
 
@@ -52,7 +52,7 @@ Captures the outgoing request and returns a canned Responses payload.
 | Request construction (endpoint `/v1/responses`, model, input, instructions, `web_search` tool, temperature, max_output_tokens, auth/org/project headers) | 10 |
 | Response parsing (text, token usage, web-call count, de-duplicated `url_citation` sources) | 6 |
 
-**Result: 16 passed, 0 failed.**
+**Result: 20 passed, 0 failed.**
 
 ### 4. Render smoke test (fake `$wpdb` + admin stubs) — `php tests/smoke-render.php`
 
@@ -67,7 +67,7 @@ fatal or exception.
 
 **Result: 34 passed, 0 failed.**
 
-### Combined: **117 checks, 0 failures.**
+### Combined: **121 checks, 0 failures.**
 
 ### 5. WordPress-integration suite — `phpunit` (requires WP test library)
 

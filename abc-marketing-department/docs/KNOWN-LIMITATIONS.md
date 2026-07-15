@@ -25,8 +25,10 @@ stable fallback rather than a decorative non-working control. The main limits:
 - Web research depends on the **selected model and current API supporting the
   `web_search` tool**. If the model/endpoint cannot perform live research, the
   interface says so rather than pretending; no citations are fabricated.
-- Some reasoning models reject a `temperature` parameter. The setting can be left
-  blank to omit it; if a model rejects it, the run surfaces a clear API error.
+- Some reasoning models reject a `temperature` parameter. The client handles this
+  automatically: if the API rejects an unsupported parameter (temperature/top_p/
+  penalties), it drops that parameter, retries, and remembers the model's quirk so
+  later runs omit it upfront. You can also leave the temperature setting blank.
 - Structured outputs (recommendations/tasks/content) are parsed from a JSON block
   the model appends. If the model returns no parseable JSON, the raw response is
   stored and a parse-warning is logged; nothing is silently dropped.

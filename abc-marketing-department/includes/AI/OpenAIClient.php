@@ -141,6 +141,13 @@ final class OpenAIClient {
 			$body['tools']  = array( $tool );
 		}
 
+		// Drop parameters this model is known to reject (learned from prior runs,
+		// e.g. reasoning models that do not accept `temperature`). Avoids a
+		// wasted round-trip.
+		foreach ( self::model_unsupported( $model ) as $bad ) {
+			unset( $body[ $bad ] );
+		}
+
 		$headers = array(
 			'Authorization' => 'Bearer ' . $key,
 			'Content-Type'  => 'application/json',
@@ -155,41 +162,69 @@ final class OpenAIClient {
 		$timeout = max( 5, (int) $settings['timeout'] );
 		$retries = max( 0, (int) $settings['retries'] );
 
-		$attempt  = 0;
-		$response = null;
-		do {
-			$response = wp_remote_post(
-				self::ENDPOINT,
-				array(
-					'headers' => $headers,
-					'body'    => wp_json_encode( $body ),
-					'timeout' => $timeout,
-				)
-			);
+		$code = 0;
+		$data = null;
 
-			if ( ! is_wp_error( $response ) ) {
-				$code = (int) wp_remote_retrieve_response_code( $response );
-				// Retry only on transient server/rate errors.
-				if ( ! in_array( $code, array( 429, 500, 502, 503, 504 ), true ) ) {
-					break;
+		// Outer loop: on an "unsupported parameter" rejection, drop that param
+		// and retry (bounded), so a model that refuses e.g. `temperature` still
+		// completes instead of failing.
+		for ( $strip = 0; $strip < 4; $strip++ ) {
+			$attempt  = 0;
+			$response = null;
+			do {
+				$response = wp_remote_post(
+					self::ENDPOINT,
+					array(
+						'headers' => $headers,
+						'body'    => wp_json_encode( $body ),
+						'timeout' => $timeout,
+					)
+				);
+
+				if ( ! is_wp_error( $response ) ) {
+					$code = (int) wp_remote_retrieve_response_code( $response );
+					// Retry only on transient server/rate errors.
+					if ( ! in_array( $code, array( 429, 500, 502, 503, 504 ), true ) ) {
+						break;
+					}
 				}
-			}
-			$attempt++;
-			if ( $attempt <= $retries ) {
-				sleep( min( 8, 2 ** $attempt ) );
-			}
-		} while ( $attempt <= $retries );
+				$attempt++;
+				if ( $attempt <= $retries ) {
+					sleep( min( 8, 2 ** $attempt ) );
+				}
+			} while ( $attempt <= $retries );
 
-		// Transport failure (timeout, DNS, TLS...).
-		if ( is_wp_error( $response ) ) {
-			$result['error']      = $response->get_error_message();
-			$result['error_code'] = 'transport';
+			// Transport failure (timeout, DNS, TLS...).
+			if ( is_wp_error( $response ) ) {
+				$result['error']      = $response->get_error_message();
+				$result['error_code'] = 'transport';
+				return $result;
+			}
+
+			$code = (int) wp_remote_retrieve_response_code( $response );
+			$raw  = wp_remote_retrieve_body( $response );
+			$data = json_decode( $raw, true );
+
+			if ( 200 === $code ) {
+				break;
+			}
+
+			// Adaptive parameter stripping.
+			$bad = self::unsupported_param( is_array( $data ) ? $data : array() );
+			if ( '' !== $bad && array_key_exists( $bad, $body ) && self::is_droppable_param( $bad ) ) {
+				unset( $body[ $bad ] );
+				self::remember_unsupported( $model, $bad );
+				continue;
+			}
+
+			// Non-recoverable error.
+			$msg = is_array( $data ) && isset( $data['error']['message'] )
+				? (string) $data['error']['message']
+				: ( 'HTTP ' . $code );
+			$result['error']      = $msg;
+			$result['error_code'] = self::classify_error( $code, is_array( $data ) ? $data : array() );
 			return $result;
 		}
-
-		$code = (int) wp_remote_retrieve_response_code( $response );
-		$raw  = wp_remote_retrieve_body( $response );
-		$data = json_decode( $raw, true );
 
 		if ( 200 !== $code ) {
 			$msg = is_array( $data ) && isset( $data['error']['message'] )
@@ -317,5 +352,72 @@ final class OpenAIClient {
 			return 'web_search_unsupported';
 		}
 		return 'api_error';
+	}
+
+	/**
+	 * Extract the name of a parameter the API rejected as unsupported, if any.
+	 *
+	 * @param array<string,mixed> $data Decoded error body.
+	 * @return string Parameter name, or '' when not a parameter-support error.
+	 */
+	private static function unsupported_param( array $data ): string {
+		$err = $data['error'] ?? array();
+		if ( ! is_array( $err ) ) {
+			return '';
+		}
+		if ( ! empty( $err['param'] ) && is_string( $err['param'] ) ) {
+			return $err['param'];
+		}
+		$msg = strtolower( (string) ( $err['message'] ?? '' ) );
+		$is_param_error = str_contains( $msg, 'unsupported parameter' )
+			|| ( str_contains( $msg, 'not supported' ) && str_contains( $msg, 'parameter' ) )
+			|| ( str_contains( $msg, 'unknown parameter' ) );
+		if ( $is_param_error && preg_match( "/'([a-z0-9_]+)'/i", (string) ( $err['message'] ?? '' ), $m ) ) {
+			return $m[1];
+		}
+		return '';
+	}
+
+	/**
+	 * Whether a parameter is safe to drop and retry without.
+	 *
+	 * @param string $param Parameter name.
+	 */
+	private static function is_droppable_param( string $param ): bool {
+		return in_array( $param, array( 'temperature', 'top_p', 'presence_penalty', 'frequency_penalty' ), true );
+	}
+
+	/**
+	 * Parameters a given model has previously rejected (learned quirks).
+	 *
+	 * @param string $model Model id.
+	 * @return string[]
+	 */
+	private static function model_unsupported( string $model ): array {
+		$quirks = get_option( 'abcmd_model_quirks', array() );
+		if ( ! is_array( $quirks ) ) {
+			return array();
+		}
+		$list = $quirks[ $model ] ?? array();
+		return is_array( $list ) ? array_values( array_filter( array_map( 'strval', $list ) ) ) : array();
+	}
+
+	/**
+	 * Remember that a model rejects a parameter, so future runs omit it upfront.
+	 *
+	 * @param string $model Model id.
+	 * @param string $param Parameter name.
+	 */
+	private static function remember_unsupported( string $model, string $param ): void {
+		$quirks = get_option( 'abcmd_model_quirks', array() );
+		if ( ! is_array( $quirks ) ) {
+			$quirks = array();
+		}
+		$list = isset( $quirks[ $model ] ) && is_array( $quirks[ $model ] ) ? $quirks[ $model ] : array();
+		if ( ! in_array( $param, $list, true ) ) {
+			$list[] = $param;
+		}
+		$quirks[ $model ] = $list;
+		update_option( 'abcmd_model_quirks', $quirks, false );
 	}
 }

@@ -4,7 +4,7 @@ Tags: marketing, books, authors, openai, analytics, campaigns
 Requires at least: 6.5
 Tested up to: 7.0.1
 Requires PHP: 8.1
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -73,6 +73,12 @@ time.
 
 == Changelog ==
 
+= 1.0.2 =
+* Fix: AI runs failed with "Unsupported parameter: 'temperature' is not supported
+  with this model" on reasoning-family models. The client now drops a rejected
+  parameter and retries automatically, and remembers the model's quirk so later
+  runs omit it upfront.
+
 = 1.0.1 =
 * Fix: saving the OpenAI API key failed on hosts using WordPress's bundled
   sodium_compat polyfill (without the native libsodium extension) because
@@ -84,6 +90,9 @@ time.
 * Initial phase-one release.
 
 == Upgrade Notice ==
+
+= 1.0.2 =
+Fixes AI runs on models that reject the temperature parameter.
 
 = 1.0.1 =
 Fixes API-key saving on hosts without the native libsodium extension.
