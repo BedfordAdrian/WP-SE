@@ -1,0 +1,54 @@
+/* Marketing Department admin styles */
+.abcmd-wrap .abcmd-subtitle { max-width: 60em; margin-bottom: 1em; }
+
+.abcmd-stats { display: flex; flex-wrap: wrap; gap: 14px; margin: 16px 0; }
+.abcmd-stat {
+	background: #fff; border: 1px solid #dcdcde; border-radius: 6px;
+	padding: 14px 18px; min-width: 140px; flex: 1 1 140px;
+}
+.abcmd-stat-value { font-size: 26px; font-weight: 600; line-height: 1.1; }
+.abcmd-stat-label { color: #50575e; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; margin-top: 4px; }
+.abcmd-stat-sub { color: #646970; font-size: 12px; margin-top: 4px; }
+
+.abcmd-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; margin-top: 16px; }
+.abcmd-card {
+	background: #fff; border: 1px solid #dcdcde; border-radius: 6px; padding: 16px 18px;
+}
+.abcmd-card h2, .abcmd-card h3 { margin-top: 0; }
+
+.abcmd-pill {
+	display: inline-block; padding: 2px 9px; border-radius: 999px;
+	font-size: 11px; font-weight: 600; background: #f0f0f1; color: #3c434a; white-space: nowrap;
+}
+.abcmd-pill-approved, .abcmd-pill-active, .abcmd-pill-completed, .abcmd-pill-ok { background: #edfaef; color: #096b1d; }
+.abcmd-pill-rejected, .abcmd-pill-cancelled, .abcmd-pill-error { background: #fcebea; color: #8a1f11; }
+.abcmd-pill-awaiting-review, .abcmd-pill-draft, .abcmd-pill-pending { background: #fef8ee; color: #8a6116; }
+.abcmd-pill-warning, .abcmd-pill-delayed { background: #fef8ee; color: #8a6116; }
+.abcmd-pill-info { background: #eef3fb; color: #1c4b8a; }
+.abcmd-pill-evidence-backed { background: #edfaef; color: #096b1d; }
+.abcmd-pill-inferred { background: #eef3fb; color: #1c4b8a; }
+.abcmd-pill-experimental { background: #fef8ee; color: #8a6116; }
+
+.abcmd-empty { background: #fff; border: 1px dashed #c3c4c7; border-radius: 6px; padding: 28px; text-align: center; color: #646970; }
+
+.abcmd-anomaly { border-left: 4px solid #dba617; padding: 8px 12px; margin: 8px 0; background: #fff; }
+.abcmd-anomaly.severity-warning { border-left-color: #d63638; }
+.abcmd-anomaly.severity-info { border-left-color: #2271b1; }
+
+.abcmd-checklist { columns: 2; max-width: 720px; }
+.abcmd-checklist label { display: block; margin: 4px 0; }
+.abcmd-checklist .sensitive { color: #8a1f11; }
+
+.abcmd-cost-box { background: #f6f7f7; border: 1px solid #dcdcde; border-radius: 6px; padding: 12px 16px; margin: 12px 0; }
+.abcmd-cost-box strong { font-size: 18px; }
+
+.abcmd-calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 12px; }
+.abcmd-calendar .day { background: #fff; border: 1px solid #dcdcde; min-height: 90px; padding: 4px 6px; font-size: 12px; }
+.abcmd-calendar .day .d { color: #646970; font-weight: 600; }
+.abcmd-calendar .evt { background: #eef3fb; border-radius: 3px; padding: 2px 4px; margin-top: 3px; display: block; }
+
+.abcmd-demo-badge { background: #fef8ee; color: #8a6116; border: 1px solid #f0c33c; border-radius: 4px; padding: 1px 8px; font-size: 11px; font-weight: 600; }
+
+table.abcmd-table { margin-top: 12px; }
+table.abcmd-table td, table.abcmd-table th { vertical-align: top; }
+.abcmd-mono { font-family: Menlo, Consolas, monospace; font-size: 12px; }
